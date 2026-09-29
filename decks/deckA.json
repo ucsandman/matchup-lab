@@ -1,0 +1,157 @@
+{
+  "archetype": "Rakdos Midrange",
+  "format": "Pioneer",
+  "source": "https://www.mtggoldfish.com/deck/7935298",
+  "event": "MTGO Pioneer Challenge 32 2026-08-31, 17th place (4-2)",
+  "pilot": "olbeda",
+  "date": "2026-08-31",
+  "note": "Identical 75 went 5-0 in MTGO Pioneer League 2026-09-21 (NAKISHIMA, https://www.mtggoldfish.com/deck/7966222); the Challenge list is used because it is the most recent tournament (non-League) result.",
+  "main": [
+    {
+      "count": 1,
+      "name": "Abrade"
+    },
+    {
+      "count": 1,
+      "name": "Bitter Triumph"
+    },
+    {
+      "count": 4,
+      "name": "Blackcleave Cliffs"
+    },
+    {
+      "count": 2,
+      "name": "Blazemire Verge"
+    },
+    {
+      "count": 4,
+      "name": "Blightstep Pathway // Searstep Pathway"
+    },
+    {
+      "count": 4,
+      "name": "Blood Crypt"
+    },
+    {
+      "count": 4,
+      "name": "Bloodtithe Harvester"
+    },
+    {
+      "count": 1,
+      "name": "Bonecrusher Giant // Stomp"
+    },
+    {
+      "count": 1,
+      "name": "Castle Locthwain"
+    },
+    {
+      "count": 2,
+      "name": "Duress"
+    },
+    {
+      "count": 4,
+      "name": "Fable of the Mirror-Breaker // Reflection of Kiki-Jiki"
+    },
+    {
+      "count": 4,
+      "name": "Fatal Push"
+    },
+    {
+      "count": 1,
+      "name": "Fear of Missing Out"
+    },
+    {
+      "count": 2,
+      "name": "Gifted Aetherborn"
+    },
+    {
+      "count": 1,
+      "name": "Go for the Throat"
+    },
+    {
+      "count": 2,
+      "name": "Graveyard Trespasser // Graveyard Glutton"
+    },
+    {
+      "count": 2,
+      "name": "Hive of the Eye Tyrant"
+    },
+    {
+      "count": 1,
+      "name": "Liliana of the Veil"
+    },
+    {
+      "count": 4,
+      "name": "Mutavault"
+    },
+    {
+      "count": 3,
+      "name": "Sheoldred, the Apocalypse"
+    },
+    {
+      "count": 2,
+      "name": "Swamp"
+    },
+    {
+      "count": 1,
+      "name": "Takenuma, Abandoned Mire"
+    },
+    {
+      "count": 4,
+      "name": "Thoughtseize"
+    },
+    {
+      "count": 4,
+      "name": "Unholy Annex // Ritual Chamber"
+    },
+    {
+      "count": 1,
+      "name": "Urborg, Tomb of Yawgmoth"
+    }
+  ],
+  "side": [
+    {
+      "count": 1,
+      "name": "Duress"
+    },
+    {
+      "count": 1,
+      "name": "Extinction Event"
+    },
+    {
+      "count": 2,
+      "name": "Go Blank"
+    },
+    {
+      "count": 1,
+      "name": "Hidetsugu Consumes All // Vessel of the All-Consuming"
+    },
+    {
+      "count": 2,
+      "name": "Invoke Despair"
+    },
+    {
+      "count": 1,
+      "name": "Kalitas, Traitor of Ghet"
+    },
+    {
+      "count": 2,
+      "name": "Petrified Hamlet"
+    },
+    {
+      "count": 1,
+      "name": "Ray of Enfeeblement"
+    },
+    {
+      "count": 1,
+      "name": "Reckoner Bankbuster"
+    },
+    {
+      "count": 1,
+      "name": "Torch the Tower"
+    },
+    {
+      "count": 2,
+      "name": "Unlicensed Hearse"
+    }
+  ]
+}

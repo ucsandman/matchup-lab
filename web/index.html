@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Rakdos vs Mono-Red Analyzer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <h1>Rakdos vs Mono-Red: position and opening-hand analyzer</h1>
+  <p class="lede">Click cards to rebuild a game position or an opening hand, then press Analyze to see which play wins most often when this computer plays the rest of the game many times with simple heuristic players.</p>
+  <nav class="tabs" role="tablist">
+    <button type="button" role="tab" id="tab-board" aria-selected="true" aria-controls="panel-board">Board position</button>
+    <button type="button" role="tab" id="tab-hand" aria-selected="false" aria-controls="panel-hand">Opening hand: keep or mulligan?</button>
+  </nav>
+</header>
+
+<main>
+  <section id="panel-board" role="tabpanel" aria-labelledby="tab-board">
+    <div class="layout">
+      <div class="decks">
+        <fieldset class="dest">
+          <legend>Clicking a card adds a copy to</legend>
+          <label><input type="radio" name="zone" value="battlefield" checked> Battlefield</label>
+          <label><input type="radio" name="zone" value="hand"> Hand</label>
+          <label><input type="radio" name="zone" value="graveyard"> Graveyard</label>
+          <label><input type="radio" name="zone" value="exile"> Exile</label>
+          <p class="hint">Rakdos cards go to player A, Mono-Red cards to player B. A card in the opponent's hand is a card you know they hold (seen with Thoughtseize or Duress). Hover a card to read it.</p>
+        </fieldset>
+        <div class="deck-cols">
+          <div class="deck-col" id="deck-0"></div>
+          <div class="deck-col" id="deck-1"></div>
+        </div>
+      </div>
+
+      <div class="board">
+        <fieldset class="game">
+          <legend>Game state</legend>
+          <div class="grid">
+            <label>You are
+              <select id="viewer" title="The spot is analyzed from this player's point of view: their whole hand is known, the opponent's hand is not.">
+                <option value="0">A: Rakdos Midrange</option><option value="1">B: Mono-Red Aggro</option>
+              </select></label>
+            <label>On the play (took turn 1)
+              <select id="starting"><option value="0">A: Rakdos Midrange</option><option value="1">B: Mono-Red Aggro</option></select></label>
+            <label>Turn number <abbr title="Counts both players' turns: on the play your turns are 1, 3, 5, ...; on the draw 2, 4, 6, .... Turn 0 is the mulligan step before the game.">(?)</abbr>
+              <input id="turn" type="number" min="0" max="200" step="1"></label>
+            <label>Step
+              <select id="step" title="The phase or step of the turn the position is in."></select></label>
+            <label>Whose turn
+              <select id="active" title="The active player: whose turn it is. Changing the turn number or who is on the play sets this for you.">
+                <option value="0">A: Rakdos Midrange</option><option value="1">B: Mono-Red Aggro</option>
+              </select></label>
+            <label>Who has priority <abbr title="Priority: the player who may cast a spell or activate an ability right now. Usually the player whose turn it is.">(?)</abbr>
+              <select id="priority"><option value="0">A: Rakdos Midrange</option><option value="1">B: Mono-Red Aggro</option></select></label>
+            <label class="check"><input id="land-played" type="checkbox"> The player whose turn it is has played a land this turn</label>
+          </div>
+          <p class="warn" id="turn-warning" hidden></p>
+          <label class="note-label">Note (optional, saved with the board)
+            <input id="note" type="text" maxlength="400" placeholder="for example: my turn 4, Sheoldred now or hold up removal?"></label>
+        </fieldset>
+
+        <div id="players"></div>
+
+        <fieldset class="analyze">
+          <legend>Analyze this position</legend>
+          <div class="grid">
+            <label>Search size
+              <select id="budget" title="More samples and searches give narrower intervals and take longer. Samples: random guesses of the cards you cannot see."></select></label>
+            <label>Show win rates for
+              <select id="perspective"><option value="">You (the player above)</option><option value="A">A: Rakdos Midrange</option><option value="B">B: Mono-Red Aggro</option></select></label>
+          </div>
+          <div class="buttons">
+            <button type="button" id="analyze" class="primary">Analyze position</button>
+            <button type="button" id="export">Export JSON</button>
+            <label class="button" for="import-file">Import JSON</label>
+            <input type="file" id="import-file" accept=".json,application/json" class="visually-hidden">
+            <button type="button" id="load-example">Load the example board</button>
+            <button type="button" id="clear">Clear the board</button>
+          </div>
+        </fieldset>
+
+        <section class="results" id="spot-results" aria-live="polite">
+          <h2>Results</h2>
+          <p class="hint">Set up a position and press Analyze position. The results appear here.</p>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-hand" role="tabpanel" aria-labelledby="tab-hand" hidden>
+    <div class="layout">
+      <div class="decks">
+        <p class="hint">Click Rakdos Midrange cards to build your opening seven (the hand tool analyzes deck A only). Click a card in the hand to remove it.</p>
+        <div class="deck-col" id="hand-deck"></div>
+      </div>
+      <div class="board">
+        <fieldset class="game">
+          <legend>Your opening hand</legend>
+          <div class="grid">
+            <label>Play or draw
+              <select id="hand-play"><option value="play">On the play (you go first)</option><option value="draw">On the draw (you go second)</option></select></label>
+            <label>Mulligans already taken <abbr title="London mulligan: after N mulligans you draw 7 and put N on the bottom. Give the 7 cards drawn; tick the ones you bottom, or leave them unticked and the computer picks.">(?)</abbr>
+              <select id="hand-mulligans"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+            <label>Games per choice (at most)
+              <select id="hand-games" title="The tool stops early when keep and mulligan clearly differ. More games give narrower intervals.">
+                <option value="1000">1000 (default, up to about a minute)</option><option value="200">200 (faster, wider intervals)</option>
+              </select></label>
+          </div>
+          <div id="hand-list" class="hand-list"></div>
+          <div class="buttons">
+            <button type="button" id="hand-analyze" class="primary">Analyze hand</button>
+            <button type="button" id="hand-clear">Clear the hand</button>
+          </div>
+        </fieldset>
+        <section class="results" id="hand-results" aria-live="polite">
+          <h2>Results</h2>
+          <p class="hint">Click seven cards and press Analyze hand. The tool plays the hand many times against the Mono-Red deck and compares it with taking a mulligan.</p>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="foot">
+  <p>Runs on this computer only (127.0.0.1). Card images come from Scryfall. Win rates reflect heuristic play, not perfect play.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "spot": 1,
+  "note": "Rakdos on the play, its fourth turn (turn 7), precombat main, before the land drop. Sheoldred now, or hold up removal?",
+  "viewer": 0,
+  "turn": 7,
+  "step": "main1",
+  "activePlayer": 0,
+  "players": [
+    {
+      "note": "Deck A, Rakdos Midrange (you)",
+      "life": 14,
+      "mulligans": 1,
+      "hand": ["Sheoldred, the Apocalypse", "Swamp"],
+      "graveyard": ["Thoughtseize", "Fatal Push"],
+      "exile": [],
+      "library": { "knownBottom": ["Duress"] }
+    },
+    {
+      "note": "Deck B, Mono-Red Aggro (the opponent)",
+      "life": 13,
+      "mulligans": 0,
+      "hand": ["Screaming Nemesis"],
+      "handHidden": 2,
+      "graveyard": ["Monastery Swiftspear", "Monstrous Rage", "Burst Lightning"],
+      "exile": []
+    }
+  ],
+  "battlefield": [
+    { "name": "Blood Crypt", "controller": 0 },
+    { "name": "Blackcleave Cliffs", "controller": 0 },
+    { "name": "Blightstep Pathway", "controller": 0 },
+    { "name": "Bloodtithe Harvester", "controller": 0 },
+    { "name": "Blood", "controller": 0 },
+    { "name": "Fable of the Mirror-Breaker", "controller": 0, "lore": 2 },
+    { "name": "Goblin Shaman", "controller": 0 },
+    { "name": "Mountain", "controller": 1 },
+    { "name": "Mountain", "controller": 1 },
+    { "name": "Mutavault", "controller": 1 },
+    { "name": "Emberheart Challenger", "controller": 1, "sick": true }
+  ]
+}

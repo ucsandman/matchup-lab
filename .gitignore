@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+*.log
+out/
+.dashclaw-local/
+docs/CR.txt
+out/

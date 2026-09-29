@@ -1,0 +1,52 @@
+{
+  "name": "matchup-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Simulation-and-search decision aid for one fixed Magic: The Gathering matchup (Pioneer: Rakdos Midrange vs Mono-Red Aggro). A small rules engine for the 56 cards in the two lists, heuristic and search agents, a mulligan tool, a spot analyzer and a local web UI. Not a GTO solver.",
+  "license": "MIT",
+  "author": "Wes Sander",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucsandman/matchup-lab.git"
+  },
+  "homepage": "https://github.com/ucsandman/matchup-lab#readme",
+  "bugs": {
+    "url": "https://github.com/ucsandman/matchup-lab/issues"
+  },
+  "keywords": [
+    "magic-the-gathering",
+    "mtg",
+    "pioneer",
+    "simulation",
+    "monte-carlo-tree-search",
+    "ismcts",
+    "mulligan",
+    "typescript"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node node_modules/typescript/bin/tsc -p tsconfig.json",
+    "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
+    "test": "node node_modules/vitest/vitest.mjs run",
+    "test:watch": "node node_modules/vitest/vitest.mjs",
+    "fuzz": "node --import tsx src/tools/fuzz.ts",
+    "bench": "node --import tsx src/tools/bench.ts",
+    "cli": "node --import tsx src/cli/index.ts",
+    "lint:cr": "node scripts/lint-cr.mjs",
+    "check:cards": "node --import tsx scripts/check-cards.mjs",
+    "verify:all": "node scripts/verify-all.mjs",
+    "web": "node --import tsx src/web/server.ts",
+    "smoke:web": "node --import tsx scripts/web-smoke.mjs",
+    "fetch:cr": "node scripts/fetch-cr.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "playwright": "^1.63.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  }
+}

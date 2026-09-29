@@ -1,0 +1,1294 @@
+{
+  "Abrade": {
+    "name": "Abrade",
+    "mana_cost": "{1}{R}",
+    "cmc": 2,
+    "type_line": "Instant",
+    "oracle_text": "Choose one —\n• Abrade deals 3 damage to target creature.\n• Destroy target artifact.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/soc/234/abrade?utm_source=api"
+  },
+  "Bitter Triumph": {
+    "name": "Bitter Triumph",
+    "mana_cost": "{1}{B}",
+    "cmc": 2,
+    "type_line": "Instant",
+    "oracle_text": "As an additional cost to cast this spell, discard a card or pay 3 life.\nDestroy target creature or planeswalker.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/tdc/173/bitter-triumph?utm_source=api"
+  },
+  "Blackcleave Cliffs": {
+    "name": "Blackcleave Cliffs",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land",
+    "oracle_text": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {B} or {R}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/dsc/263/blackcleave-cliffs?utm_source=api"
+  },
+  "Blazemire Verge": {
+    "name": "Blazemire Verge",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land",
+    "oracle_text": "{T}: Add {B}.\n{T}: Add {R}. Activate only if you control a Swamp or a Mountain.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/dsk/256/blazemire-verge?utm_source=api"
+  },
+  "Blightstep Pathway // Searstep Pathway": {
+    "name": "Blightstep Pathway // Searstep Pathway",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land // Land",
+    "oracle_text": "{T}: Add {B}.\n//\n{T}: Add {R}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "modal_dfc",
+    "card_faces": [
+      {
+        "name": "Blightstep Pathway",
+        "mana_cost": "",
+        "type_line": "Land",
+        "oracle_text": "{T}: Add {B}.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null
+      },
+      {
+        "name": "Searstep Pathway",
+        "mana_cost": "",
+        "type_line": "Land",
+        "oracle_text": "{T}: Add {R}.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null
+      }
+    ],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/khm/252/blightstep-pathway-searstep-pathway?utm_source=api"
+  },
+  "Blood Crypt": {
+    "name": "Blood Crypt",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land — Swamp Mountain",
+    "oracle_text": "({T}: Add {B} or {R}.)\nAs this land enters, you may pay 2 life. If you don't, it enters tapped.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/trk/278/blood-crypt?utm_source=api"
+  },
+  "Bloodtithe Harvester": {
+    "name": "Bloodtithe Harvester",
+    "mana_cost": "{B}{R}",
+    "cmc": 2,
+    "type_line": "Creature — Vampire",
+    "oracle_text": "When this creature enters, create a Blood token. (It's an artifact with \"{1}, {T}, Discard a card, Sacrifice this token: Draw a card.\")\n{T}, Sacrifice this creature: Target creature gets -X/-X until end of turn, where X is twice the number of Blood tokens you control. Activate only as a sorcery.",
+    "power": "3",
+    "toughness": "2",
+    "loyalty": null,
+    "colors": [
+      "B",
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/inr/233/bloodtithe-harvester?utm_source=api"
+  },
+  "Bonecrusher Giant // Stomp": {
+    "name": "Bonecrusher Giant // Stomp",
+    "mana_cost": "{2}{R} // {1}{R}",
+    "cmc": 3,
+    "type_line": "Creature — Giant // Instant — Adventure",
+    "oracle_text": "Whenever this creature becomes the target of a spell, this creature deals 2 damage to that spell's controller.\n//\nDamage can't be prevented this turn. Stomp deals 2 damage to any target.",
+    "power": "4",
+    "toughness": "3",
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "adventure",
+    "card_faces": [
+      {
+        "name": "Bonecrusher Giant",
+        "mana_cost": "{2}{R}",
+        "type_line": "Creature — Giant",
+        "oracle_text": "Whenever this creature becomes the target of a spell, this creature deals 2 damage to that spell's controller.",
+        "power": "4",
+        "toughness": "3",
+        "loyalty": null
+      },
+      {
+        "name": "Stomp",
+        "mana_cost": "{1}{R}",
+        "type_line": "Instant — Adventure",
+        "oracle_text": "Damage can't be prevented this turn. Stomp deals 2 damage to any target.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null
+      }
+    ],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/clb/781/bonecrusher-giant-stomp?utm_source=api"
+  },
+  "Burst Lightning": {
+    "name": "Burst Lightning",
+    "mana_cost": "{R}",
+    "cmc": 1,
+    "type_line": "Instant",
+    "oracle_text": "Kicker {4} (You may pay an additional {4} as you cast this spell.)\nBurst Lightning deals 2 damage to any target. If this spell was kicked, it deals 4 damage instead.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Kicker"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/fdn/192/burst-lightning?utm_source=api"
+  },
+  "Castle Locthwain": {
+    "name": "Castle Locthwain",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land",
+    "oracle_text": "This land enters tapped unless you control a Swamp.\n{T}: Add {B}.\n{1}{B}{B}, {T}: Draw a card, then you lose life equal to the number of cards in your hand.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/clb/884/castle-locthwain?utm_source=api"
+  },
+  "Den of the Bugbear": {
+    "name": "Den of the Bugbear",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land",
+    "oracle_text": "If you control two or more other lands, this land enters tapped.\n{T}: Add {R}.\n{3}{R}: Until end of turn, this land becomes a 3/2 red Goblin creature with \"Whenever this creature attacks, create a 1/1 red Goblin creature token that's tapped and attacking.\" It's still a land.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/afr/254/den-of-the-bugbear?utm_source=api"
+  },
+  "Duress": {
+    "name": "Duress",
+    "mana_cost": "{B}",
+    "cmc": 1,
+    "type_line": "Sorcery",
+    "oracle_text": "Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/fdn/606/duress?utm_source=api"
+  },
+  "Emberheart Challenger": {
+    "name": "Emberheart Challenger",
+    "mana_cost": "{1}{R}",
+    "cmc": 2,
+    "type_line": "Creature — Mouse Warrior",
+    "oracle_text": "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nValiant — Whenever this creature becomes the target of a spell or ability you control for the first time each turn, exile the top card of your library. Until end of turn, you may play that card.",
+    "power": "2",
+    "toughness": "2",
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Prowess",
+      "Valiant",
+      "Haste"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/blb/133/emberheart-challenger?utm_source=api"
+  },
+  "Extinction Event": {
+    "name": "Extinction Event",
+    "mana_cost": "{3}{B}",
+    "cmc": 4,
+    "type_line": "Sorcery",
+    "oracle_text": "Choose odd or even. Exile each creature with mana value of the chosen quality. (Zero is even.)",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/iko/88/extinction-event?utm_source=api"
+  },
+  "Fable of the Mirror-Breaker // Reflection of Kiki-Jiki": {
+    "name": "Fable of the Mirror-Breaker // Reflection of Kiki-Jiki",
+    "mana_cost": "{2}{R}",
+    "cmc": 3,
+    "type_line": "Enchantment — Saga // Enchantment Creature — Goblin Shaman",
+    "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Create a 2/2 red Goblin Shaman creature token with \"Whenever this token attacks, create a Treasure token.\"\nII — You may discard up to two cards. If you do, draw that many cards.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.\n//\n{1}, {T}: Create a token that's a copy of another target nonlegendary creature you control, except it has haste. Sacrifice it at the beginning of the next end step.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Transform",
+      "Treasure"
+    ],
+    "layout": "transform",
+    "card_faces": [
+      {
+        "name": "Fable of the Mirror-Breaker",
+        "mana_cost": "{2}{R}",
+        "type_line": "Enchantment — Saga",
+        "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Create a 2/2 red Goblin Shaman creature token with \"Whenever this token attacks, create a Treasure token.\"\nII — You may discard up to two cards. If you do, draw that many cards.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null
+      },
+      {
+        "name": "Reflection of Kiki-Jiki",
+        "mana_cost": "",
+        "type_line": "Enchantment Creature — Goblin Shaman",
+        "oracle_text": "{1}, {T}: Create a token that's a copy of another target nonlegendary creature you control, except it has haste. Sacrifice it at the beginning of the next end step.",
+        "power": "2",
+        "toughness": "2",
+        "loyalty": null
+      }
+    ],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/neo/141/fable-of-the-mirror-breaker-reflection-of-kiki-jiki?utm_source=api"
+  },
+  "Fatal Push": {
+    "name": "Fatal Push",
+    "mana_cost": "{B}",
+    "cmc": 1,
+    "type_line": "Instant",
+    "oracle_text": "Destroy target creature if it has mana value 2 or less.\nRevolt — Destroy that creature if it has mana value 4 or less instead if a permanent left the battlefield under your control this turn.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Revolt"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/2xm/93/fatal-push?utm_source=api"
+  },
+  "Fear of Missing Out": {
+    "name": "Fear of Missing Out",
+    "mana_cost": "{1}{R}",
+    "cmc": 2,
+    "type_line": "Enchantment Creature — Nightmare",
+    "oracle_text": "When this creature enters, discard a card, then draw a card.\nDelirium — Whenever this creature attacks for the first time each turn, if there are four or more card types among cards in your graveyard, untap target creature. After this phase, there is an additional combat phase.",
+    "power": "2",
+    "toughness": "3",
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Delirium"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/dsk/136/fear-of-missing-out?utm_source=api"
+  },
+  "Flowstone Infusion": {
+    "name": "Flowstone Infusion",
+    "mana_cost": "{R}",
+    "cmc": 1,
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +2/-2 until end of turn.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/dmu/124/flowstone-infusion?utm_source=api"
+  },
+  "Gifted Aetherborn": {
+    "name": "Gifted Aetherborn",
+    "mana_cost": "{B}{B}",
+    "cmc": 2,
+    "type_line": "Creature — Aetherborn Vampire",
+    "oracle_text": "Deathtouch, lifelink",
+    "power": "2",
+    "toughness": "3",
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Lifelink",
+      "Deathtouch"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/jmp/239/gifted-aetherborn?utm_source=api"
+  },
+  "Go Blank": {
+    "name": "Go Blank",
+    "mana_cost": "{2}{B}",
+    "cmc": 3,
+    "type_line": "Sorcery",
+    "oracle_text": "Target player discards two cards. Then exile that player's graveyard.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/stx/72/go-blank?utm_source=api"
+  },
+  "Go for the Throat": {
+    "name": "Go for the Throat",
+    "mana_cost": "{1}{B}",
+    "cmc": 2,
+    "type_line": "Instant",
+    "oracle_text": "Destroy target nonartifact creature.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/moc/250/go-for-the-throat?utm_source=api"
+  },
+  "Graveyard Trespasser // Graveyard Glutton": {
+    "name": "Graveyard Trespasser // Graveyard Glutton",
+    "mana_cost": "{2}{B}",
+    "cmc": 3,
+    "type_line": "Creature — Human Werewolf // Creature — Werewolf",
+    "oracle_text": "Ward—Discard a card.\nWhenever this creature enters or attacks, exile up to one target card from a graveyard. If a creature card was exiled this way, each opponent loses 1 life and you gain 1 life.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)\n//\nWard—Discard a card.\nWhenever this creature enters or attacks, exile up to two target cards from graveyards. For each creature card exiled this way, each opponent loses 1 life and you gain 1 life.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Transform",
+      "Daybound",
+      "Ward",
+      "Nightbound"
+    ],
+    "layout": "transform",
+    "card_faces": [
+      {
+        "name": "Graveyard Trespasser",
+        "mana_cost": "{2}{B}",
+        "type_line": "Creature — Human Werewolf",
+        "oracle_text": "Ward—Discard a card.\nWhenever this creature enters or attacks, exile up to one target card from a graveyard. If a creature card was exiled this way, each opponent loses 1 life and you gain 1 life.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+        "power": "3",
+        "toughness": "3",
+        "loyalty": null
+      },
+      {
+        "name": "Graveyard Glutton",
+        "mana_cost": "",
+        "type_line": "Creature — Werewolf",
+        "oracle_text": "Ward—Discard a card.\nWhenever this creature enters or attacks, exile up to two target cards from graveyards. For each creature card exiled this way, each opponent loses 1 life and you gain 1 life.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "power": "4",
+        "toughness": "4",
+        "loyalty": null
+      }
+    ],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/mid/104/graveyard-trespasser-graveyard-glutton?utm_source=api"
+  },
+  "Hidetsugu Consumes All // Vessel of the All-Consuming": {
+    "name": "Hidetsugu Consumes All // Vessel of the All-Consuming",
+    "mana_cost": "{1}{B}{R}",
+    "cmc": 3,
+    "type_line": "Enchantment — Saga // Enchantment Creature — Ogre Shaman",
+    "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Destroy each nonland permanent with mana value 1 or less.\nII — Exile all graveyards.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.\n//\nTrample\nWhenever this creature deals damage, put a +1/+1 counter on it.\nWhenever this creature deals damage to a player, if it has dealt 10 or more damage to that player this turn, they lose the game.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B",
+      "R"
+    ],
+    "keywords": [
+      "Transform",
+      "Trample"
+    ],
+    "layout": "transform",
+    "card_faces": [
+      {
+        "name": "Hidetsugu Consumes All",
+        "mana_cost": "{1}{B}{R}",
+        "type_line": "Enchantment — Saga",
+        "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Destroy each nonland permanent with mana value 1 or less.\nII — Exile all graveyards.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null
+      },
+      {
+        "name": "Vessel of the All-Consuming",
+        "mana_cost": "",
+        "type_line": "Enchantment Creature — Ogre Shaman",
+        "oracle_text": "Trample\nWhenever this creature deals damage, put a +1/+1 counter on it.\nWhenever this creature deals damage to a player, if it has dealt 10 or more damage to that player this turn, they lose the game.",
+        "power": "3",
+        "toughness": "3",
+        "loyalty": null
+      }
+    ],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/neo/221/hidetsugu-consumes-all-vessel-of-the-all-consuming?utm_source=api"
+  },
+  "Hive of the Eye Tyrant": {
+    "name": "Hive of the Eye Tyrant",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land",
+    "oracle_text": "If you control two or more other lands, this land enters tapped.\n{T}: Add {B}.\n{3}{B}: Until end of turn, this land becomes a 3/3 black Beholder creature with menace and \"Whenever this creature attacks, exile target card from defending player's graveyard.\" It's still a land.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/afr/258/hive-of-the-eye-tyrant?utm_source=api"
+  },
+  "Invoke Despair": {
+    "name": "Invoke Despair",
+    "mana_cost": "{1}{B}{B}{B}{B}",
+    "cmc": 5,
+    "type_line": "Sorcery",
+    "oracle_text": "Target opponent sacrifices a creature of their choice. If they can't, they lose 2 life and you draw a card. Then repeat this process for an enchantment and a planeswalker.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/neo/101/invoke-despair?utm_source=api"
+  },
+  "Kalitas, Traitor of Ghet": {
+    "name": "Kalitas, Traitor of Ghet",
+    "mana_cost": "{2}{B}{B}",
+    "cmc": 4,
+    "type_line": "Legendary Creature — Vampire Warrior",
+    "oracle_text": "Lifelink\nIf a nontoken creature an opponent controls would die, instead exile that card and create a 2/2 black Zombie creature token.\n{2}{B}, Sacrifice another Vampire or Zombie: Put two +1/+1 counters on Kalitas.",
+    "power": "3",
+    "toughness": "4",
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Lifelink"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/ogw/86/kalitas-traitor-of-ghet?utm_source=api"
+  },
+  "Kumano Faces Kakkazan // Etching of Kumano": {
+    "name": "Kumano Faces Kakkazan // Etching of Kumano",
+    "mana_cost": "{R}",
+    "cmc": 1,
+    "type_line": "Enchantment — Saga // Enchantment Creature — Human Shaman",
+    "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — This Saga deals 1 damage to each opponent and each planeswalker they control.\nII — When you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on it.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.\n//\nHaste\nIf a creature dealt damage this turn by a source you controlled would die, exile it instead.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Transform",
+      "Haste"
+    ],
+    "layout": "transform",
+    "card_faces": [
+      {
+        "name": "Kumano Faces Kakkazan",
+        "mana_cost": "{R}",
+        "type_line": "Enchantment — Saga",
+        "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — This Saga deals 1 damage to each opponent and each planeswalker they control.\nII — When you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on it.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null
+      },
+      {
+        "name": "Etching of Kumano",
+        "mana_cost": "",
+        "type_line": "Enchantment Creature — Human Shaman",
+        "oracle_text": "Haste\nIf a creature dealt damage this turn by a source you controlled would die, exile it instead.",
+        "power": "2",
+        "toughness": "2",
+        "loyalty": null
+      }
+    ],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/neo/152/kumano-faces-kakkazan-etching-of-kumano?utm_source=api"
+  },
+  "Liliana of the Veil": {
+    "name": "Liliana of the Veil",
+    "mana_cost": "{1}{B}{B}",
+    "cmc": 3,
+    "type_line": "Legendary Planeswalker — Liliana",
+    "oracle_text": "+1: Each player discards a card.\n−2: Target player sacrifices a creature.\n−6: Separate all permanents target player controls into two piles. That player sacrifices all permanents in the pile of their choice.",
+    "power": null,
+    "toughness": null,
+    "loyalty": "3",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/inr/475/liliana-of-the-veil?utm_source=api"
+  },
+  "Magebane Lizard": {
+    "name": "Magebane Lizard",
+    "mana_cost": "{1}{R}",
+    "cmc": 2,
+    "type_line": "Creature — Lizard",
+    "oracle_text": "Whenever a player casts a noncreature spell, this creature deals damage to that player equal to the number of noncreature spells they've cast this turn.",
+    "power": "1",
+    "toughness": "4",
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/otj/134/magebane-lizard?utm_source=api"
+  },
+  "Monastery Swiftspear": {
+    "name": "Monastery Swiftspear",
+    "mana_cost": "{R}",
+    "cmc": 1,
+    "type_line": "Creature — Human Monk",
+    "oracle_text": "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+    "power": "1",
+    "toughness": "2",
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Prowess",
+      "Haste"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/bro/144/monastery-swiftspear?utm_source=api"
+  },
+  "Monstrous Rage": {
+    "name": "Monstrous Rage",
+    "mana_cost": "{R}",
+    "cmc": 1,
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +2/+0 until end of turn. Create a Monster Role token attached to it. (If you control another Role on it, put that one into the graveyard. Enchanted creature gets +1/+1 and has trample.)",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Role token"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/woe/142/monstrous-rage?utm_source=api"
+  },
+  "Mountain": {
+    "name": "Mountain",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Basic Land — Mountain",
+    "oracle_text": "({T}: Add {R}.)",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/trk/323/mountain?utm_source=api"
+  },
+  "Mutavault": {
+    "name": "Mutavault",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land",
+    "oracle_text": "{T}: Add {C}.\n{1}: This land becomes a 2/2 creature with all creature types until end of turn. It's still a land.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/clb/903/mutavault?utm_source=api"
+  },
+  "Petrified Hamlet": {
+    "name": "Petrified Hamlet",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land",
+    "oracle_text": "When this land enters, choose a land card name.\nActivated abilities of sources with the chosen name can't be activated unless they're mana abilities.\nLands with the chosen name have \"{T}: Add {C}.\"\n{T}: Add {C}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/sos/259/petrified-hamlet?utm_source=api"
+  },
+  "Pyroclasm": {
+    "name": "Pyroclasm",
+    "mana_cost": "{1}{R}",
+    "cmc": 2,
+    "type_line": "Sorcery",
+    "oracle_text": "Pyroclasm deals 2 damage to each creature.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/dsk/149/pyroclasm?utm_source=api"
+  },
+  "Ramunap Ruins": {
+    "name": "Ramunap Ruins",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land — Desert",
+    "oracle_text": "{T}: Add {C}.\n{T}, Pay 1 life: Add {R}.\n{2}{R}{R}, {T}, Sacrifice a Desert: This land deals 2 damage to each opponent.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/otc/311/ramunap-ruins?utm_source=api"
+  },
+  "Ray of Enfeeblement": {
+    "name": "Ray of Enfeeblement",
+    "mana_cost": "{B}",
+    "cmc": 1,
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets -4/-1 until end of turn. If that creature is white, it gets -4/-4 until end of turn instead.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/afr/116/ray-of-enfeeblement?utm_source=api"
+  },
+  "Reckless Rage": {
+    "name": "Reckless Rage",
+    "mana_cost": "{R}",
+    "cmc": 1,
+    "type_line": "Instant",
+    "oracle_text": "Reckless Rage deals 4 damage to target creature you don't control and 2 damage to target creature you control.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/rix/110/reckless-rage?utm_source=api"
+  },
+  "Reckoner Bankbuster": {
+    "name": "Reckoner Bankbuster",
+    "mana_cost": "{2}",
+    "cmc": 2,
+    "type_line": "Artifact — Vehicle",
+    "oracle_text": "This Vehicle enters with three charge counters on it.\n{2}, {T}, Remove a charge counter from this Vehicle: Draw a card. Then if there are no charge counters on this Vehicle, create a Treasure token and a 1/1 colorless Pilot creature token with \"This token crews Vehicles as though its power were 2 greater.\"\nCrew 3",
+    "power": "4",
+    "toughness": "4",
+    "loyalty": null,
+    "colors": [],
+    "keywords": [
+      "Treasure",
+      "Crew"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/neo/255/reckoner-bankbuster?utm_source=api"
+  },
+  "Redcap Melee": {
+    "name": "Redcap Melee",
+    "mana_cost": "{R}",
+    "cmc": 1,
+    "type_line": "Instant",
+    "oracle_text": "Redcap Melee deals 4 damage to target creature or planeswalker. If a nonred permanent is dealt damage this way, you sacrifice a land.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/eld/135/redcap-melee?utm_source=api"
+  },
+  "Rockface Village": {
+    "name": "Rockface Village",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Land",
+    "oracle_text": "{T}: Add {C}.\n{T}: Add {R}. Spend this mana only to cast a creature spell.\n{R}, {T}: Target Lizard, Mouse, Otter, or Raccoon you control gets +1/+0 and gains haste until end of turn. Activate only as a sorcery.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/blb/259/rockface-village?utm_source=api"
+  },
+  "Scorching Shot": {
+    "name": "Scorching Shot",
+    "mana_cost": "{R}{R}",
+    "cmc": 2,
+    "type_line": "Sorcery",
+    "oracle_text": "Scorching Shot deals 5 damage to target creature.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/otj/145/scorching-shot?utm_source=api"
+  },
+  "Screaming Nemesis": {
+    "name": "Screaming Nemesis",
+    "mana_cost": "{2}{R}",
+    "cmc": 3,
+    "type_line": "Creature — Spirit",
+    "oracle_text": "Haste\nWhenever this creature is dealt damage, it deals that much damage to any other target. If a player is dealt damage this way, they can't gain life for the rest of the game.",
+    "power": "3",
+    "toughness": "3",
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Haste"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/dsk/157/screaming-nemesis?utm_source=api"
+  },
+  "Sheoldred, the Apocalypse": {
+    "name": "Sheoldred, the Apocalypse",
+    "mana_cost": "{2}{B}{B}",
+    "cmc": 4,
+    "type_line": "Legendary Creature — Phyrexian Praetor",
+    "oracle_text": "Deathtouch\nWhenever you draw a card, you gain 2 life.\nWhenever an opponent draws a card, they lose 2 life.",
+    "power": "4",
+    "toughness": "5",
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Deathtouch"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/dmu/107/sheoldred-the-apocalypse?utm_source=api"
+  },
+  "Sokenzan, Crucible of Defiance": {
+    "name": "Sokenzan, Crucible of Defiance",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Legendary Land",
+    "oracle_text": "{T}: Add {R}.\nChannel — {3}{R}, Discard this card: Create two 1/1 colorless Spirit creature tokens. They gain haste until end of turn. This ability costs {1} less to activate for each legendary creature you control.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [
+      "Channel"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/neo/276/sokenzan-crucible-of-defiance?utm_source=api"
+  },
+  "Soul-Scar Mage": {
+    "name": "Soul-Scar Mage",
+    "mana_cost": "{R}",
+    "cmc": 1,
+    "type_line": "Creature — Human Wizard",
+    "oracle_text": "Prowess\nIf a source you control would deal noncombat damage to a creature an opponent controls, put that many -1/-1 counters on that creature instead.",
+    "power": "1",
+    "toughness": "2",
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Prowess"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/akh/148/soul-scar-mage?utm_source=api"
+  },
+  "Sunspine Lynx": {
+    "name": "Sunspine Lynx",
+    "mana_cost": "{2}{R}{R}",
+    "cmc": 4,
+    "type_line": "Creature — Elemental Cat",
+    "oracle_text": "Players can't gain life.\nDamage can't be prevented.\nWhen this creature enters, it deals damage to each player equal to the number of nonbasic lands that player controls.",
+    "power": "5",
+    "toughness": "4",
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/blb/155/sunspine-lynx?utm_source=api"
+  },
+  "Swamp": {
+    "name": "Swamp",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Basic Land — Swamp",
+    "oracle_text": "({T}: Add {B}.)",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/trk/321/swamp?utm_source=api"
+  },
+  "Takenuma, Abandoned Mire": {
+    "name": "Takenuma, Abandoned Mire",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Legendary Land",
+    "oracle_text": "{T}: Add {B}.\nChannel — {3}{B}, Discard this card: Mill three cards, then return a creature or planeswalker card from your graveyard to your hand. This ability costs {1} less to activate for each legendary creature you control.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [
+      "Mill",
+      "Channel"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/neo/278/takenuma-abandoned-mire?utm_source=api"
+  },
+  "The Legend of Roku // Avatar Roku": {
+    "name": "The Legend of Roku // Avatar Roku",
+    "mana_cost": "{2}{R}{R}",
+    "cmc": 4,
+    "type_line": "Enchantment — Saga // Legendary Creature — Avatar",
+    "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Exile the top three cards of your library. Until the end of your next turn, you may play those cards.\nII — Add one mana of any color.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.\n//\nFirebending 4 (Whenever this creature attacks, add {R}{R}{R}{R}. This mana lasts until end of combat.)\n{8}: Create a 4/4 red Dragon creature token with flying and firebending 4.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Transform",
+      "Firebending"
+    ],
+    "layout": "transform",
+    "card_faces": [
+      {
+        "name": "The Legend of Roku",
+        "mana_cost": "{2}{R}{R}",
+        "type_line": "Enchantment — Saga",
+        "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Exile the top three cards of your library. Until the end of your next turn, you may play those cards.\nII — Add one mana of any color.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null
+      },
+      {
+        "name": "Avatar Roku",
+        "mana_cost": "",
+        "type_line": "Legendary Creature — Avatar",
+        "oracle_text": "Firebending 4 (Whenever this creature attacks, add {R}{R}{R}{R}. This mana lasts until end of combat.)\n{8}: Create a 4/4 red Dragon creature token with flying and firebending 4.",
+        "power": "4",
+        "toughness": "4",
+        "loyalty": null
+      }
+    ],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/tla/145/the-legend-of-roku-avatar-roku?utm_source=api"
+  },
+  "Thoughtseize": {
+    "name": "Thoughtseize",
+    "mana_cost": "{B}",
+    "cmc": 1,
+    "type_line": "Sorcery",
+    "oracle_text": "Target player reveals their hand. You choose a nonland card from it. That player discards that card. You lose 2 life.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/2xm/109/thoughtseize?utm_source=api"
+  },
+  "Torch the Tower": {
+    "name": "Torch the Tower",
+    "mana_cost": "{R}",
+    "cmc": 1,
+    "type_line": "Instant",
+    "oracle_text": "Bargain (You may sacrifice an artifact, enchantment, or token as you cast this spell.)\nTorch the Tower deals 2 damage to target creature or planeswalker. If this spell was bargained, instead it deals 3 damage to that permanent and you scry 1.\nIf a permanent dealt damage by Torch the Tower would die this turn, exile it instead.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Bargain",
+      "Scry"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/woe/153/torch-the-tower?utm_source=api"
+  },
+  "Unholy Annex // Ritual Chamber": {
+    "name": "Unholy Annex // Ritual Chamber",
+    "mana_cost": "{2}{B} // {3}{B}{B}",
+    "cmc": 8,
+    "type_line": "Enchantment — Room // Enchantment — Room",
+    "oracle_text": "At the beginning of your end step, draw a card. If you control a Demon, each opponent loses 2 life and you gain 2 life. Otherwise, you lose 2 life.\n(You may cast either half. That door unlocks on the battlefield. As a sorcery, you may pay the mana cost of a locked door to unlock it.)\n//\nWhen you unlock this door, create a 6/6 black Demon creature token with flying.\n(You may cast either half. That door unlocks on the battlefield. As a sorcery, you may pay the mana cost of a locked door to unlock it.)",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "split",
+    "card_faces": [
+      {
+        "name": "Unholy Annex",
+        "mana_cost": "{2}{B}",
+        "type_line": "Enchantment — Room",
+        "oracle_text": "At the beginning of your end step, draw a card. If you control a Demon, each opponent loses 2 life and you gain 2 life. Otherwise, you lose 2 life.\n(You may cast either half. That door unlocks on the battlefield. As a sorcery, you may pay the mana cost of a locked door to unlock it.)",
+        "power": null,
+        "toughness": null,
+        "loyalty": null
+      },
+      {
+        "name": "Ritual Chamber",
+        "mana_cost": "{3}{B}{B}",
+        "type_line": "Enchantment — Room",
+        "oracle_text": "When you unlock this door, create a 6/6 black Demon creature token with flying.\n(You may cast either half. That door unlocks on the battlefield. As a sorcery, you may pay the mana cost of a locked door to unlock it.)",
+        "power": null,
+        "toughness": null,
+        "loyalty": null
+      }
+    ],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/dsk/118/unholy-annex-ritual-chamber?utm_source=api"
+  },
+  "Unlicensed Hearse": {
+    "name": "Unlicensed Hearse",
+    "mana_cost": "{2}",
+    "cmc": 2,
+    "type_line": "Artifact — Vehicle",
+    "oracle_text": "{T}: Exile up to two target cards from a single graveyard.\nUnlicensed Hearse's power and toughness are each equal to the number of cards exiled with it.\nCrew 2",
+    "power": "*",
+    "toughness": "*",
+    "loyalty": null,
+    "colors": [],
+    "keywords": [
+      "Crew"
+    ],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/snc/246/unlicensed-hearse?utm_source=api"
+  },
+  "Urborg, Tomb of Yawgmoth": {
+    "name": "Urborg, Tomb of Yawgmoth",
+    "mana_cost": "",
+    "cmc": 0,
+    "type_line": "Legendary Land",
+    "oracle_text": "Each land is a Swamp in addition to its other land types.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/tsr/287/urborg-tomb-of-yawgmoth?utm_source=api"
+  },
+  "Weathered Runestone": {
+    "name": "Weathered Runestone",
+    "mana_cost": "{2}",
+    "cmc": 2,
+    "type_line": "Artifact",
+    "oracle_text": "Nonland permanent cards in graveyards and libraries can't enter the battlefield.\nPlayers can't cast spells from graveyards or libraries.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": [],
+    "legalities": {
+      "pioneer": "legal"
+    },
+    "scryfall_uri": "https://scryfall.com/card/khm/247/weathered-runestone?utm_source=api"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "note": "Key cards for the Phase 3 hand tool (src/tools/goldfish.ts), measured for deck A (Rakdos Midrange) in the keep branch. Each entry is a proportion of games with a Wilson 95 percent interval. how: 'lands' = controls at least 'count' lands by its own turn 'byTurn'; 'cast' = cast one of 'cards' by its own turn 'byTurn'; 'battlefield' = one of 'cards' on the battlefield by then. Card names are the decklist names (a front-face name also works). Bonecrusher Giant counts as removal because by own turn 2 only its Stomp half is castable. Edit this file to change the list; no code change is needed.",
+  "keyCards": [
+    { "label": "land drop on curve: 1 land by own turn 1", "how": "lands", "count": 1, "byTurn": 1 },
+    { "label": "land drop on curve: 2 lands by own turn 2", "how": "lands", "count": 2, "byTurn": 2 },
+    { "label": "land drop on curve: 3 lands by own turn 3", "how": "lands", "count": 3, "byTurn": 3 },
+    { "label": "land drop on curve: 4 lands by own turn 4", "how": "lands", "count": 4, "byTurn": 4 },
+    { "label": "Fable of the Mirror-Breaker cast by own turn 3", "how": "cast", "cards": ["Fable of the Mirror-Breaker // Reflection of Kiki-Jiki"], "byTurn": 3 },
+    { "label": "Sheoldred, the Apocalypse cast by own turn 4", "how": "cast", "cards": ["Sheoldred, the Apocalypse"], "byTurn": 4 },
+    { "label": "any removal cast by own turn 2", "how": "cast", "cards": ["Fatal Push", "Go for the Throat", "Bitter Triumph", "Abrade", "Bonecrusher Giant // Stomp"], "byTurn": 2 }
+  ]
+}

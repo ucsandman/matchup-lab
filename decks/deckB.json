@@ -1,0 +1,101 @@
+{
+  "archetype": "Mono-Red Aggro",
+  "format": "Pioneer",
+  "source": "https://www.mtggoldfish.com/deck/7973625",
+  "event": "MTGO Pioneer Challenge 32 2026-09-26, 8th place (4-3)",
+  "pilot": "_ZNT_",
+  "date": "2026-09-26",
+  "note": "MTGGoldfish labels this list Mono-Red Prowess; MTGTop8 files the same 75 under Red Deck Wins (https://mtgtop8.com/event?e=91333&d=893649&f=PI). MTGGoldfish's separate \"Mono-Red Aggro\" archetype (Burning-Tree Emissary/Reckless Bushwhacker) last appeared 2026-05-14 with a 1-4 finish, so the current mono-red aggro list is used.",
+  "main": [
+    {
+      "count": 4,
+      "name": "Burst Lightning"
+    },
+    {
+      "count": 1,
+      "name": "Den of the Bugbear"
+    },
+    {
+      "count": 4,
+      "name": "Emberheart Challenger"
+    },
+    {
+      "count": 4,
+      "name": "Kumano Faces Kakkazan // Etching of Kumano"
+    },
+    {
+      "count": 4,
+      "name": "Monastery Swiftspear"
+    },
+    {
+      "count": 4,
+      "name": "Monstrous Rage"
+    },
+    {
+      "count": 14,
+      "name": "Mountain"
+    },
+    {
+      "count": 4,
+      "name": "Mutavault"
+    },
+    {
+      "count": 2,
+      "name": "Ramunap Ruins"
+    },
+    {
+      "count": 4,
+      "name": "Reckless Rage"
+    },
+    {
+      "count": 1,
+      "name": "Rockface Village"
+    },
+    {
+      "count": 4,
+      "name": "Screaming Nemesis"
+    },
+    {
+      "count": 1,
+      "name": "Sokenzan, Crucible of Defiance"
+    },
+    {
+      "count": 4,
+      "name": "Soul-Scar Mage"
+    },
+    {
+      "count": 4,
+      "name": "Sunspine Lynx"
+    },
+    {
+      "count": 1,
+      "name": "The Legend of Roku // Avatar Roku"
+    }
+  ],
+  "side": [
+    {
+      "count": 2,
+      "name": "Flowstone Infusion"
+    },
+    {
+      "count": 4,
+      "name": "Magebane Lizard"
+    },
+    {
+      "count": 2,
+      "name": "Pyroclasm"
+    },
+    {
+      "count": 2,
+      "name": "Redcap Melee"
+    },
+    {
+      "count": 3,
+      "name": "Scorching Shot"
+    },
+    {
+      "count": 2,
+      "name": "Weathered Runestone"
+    }
+  ]
+}

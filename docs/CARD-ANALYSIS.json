@@ -1,0 +1,838 @@
+[
+ {
+  "name": "Abrade",
+  "deck": "A main x1",
+  "summary": "1R instant, modal: 3 damage to target creature, or destroy target artifact.",
+  "rulesNeeded": ["instant-speed cast on the stack", "modal spell: choose one mode at cast time", "targeting: creature (mode 1) or artifact (mode 2)", "damage to creature + SBA lethal damage (704.5g)", "destroy (artifact)", "fizzle on illegal target at resolution"],
+  "crRefs": ["700.2 (modal spells, mode chosen on cast)", "601.2b-c (announce modes, then choose targets)", "608.2b (all targets illegal -> spell does not resolve)", "120.3 (results of damage)", "704.5g (lethal damage SBA)", "111.10 (predefined tokens; Blood/Treasure are artifacts, so mode 2 can hit them)"],
+  "hiddenInfo": "None beyond hand contents; once cast it is public. A sampled opponent hand may contain it (1 copy in the 60); being on the stack or in the graveyard removes it from the hidden pool.",
+  "complexity": "simple",
+  "proposal": "Implement modal spells generically as spell = list of modes, each with a target spec and a resolve fn; move generator emits one move per (mode, legal target). Against the Mono-Red 60 the artifact mode has no legal opposing targets in game 1 (only sideboard Weathered Runestone), so the generator prunes it naturally; A's own Blood/Treasure tokens are legal but pruned by the heuristic. Damage goes through the shared dealDamage() path so Screaming Nemesis and Soul-Scar Mage hooks apply uniformly.",
+  "scenarioTests": [
+   "A controls Abrade + 2 untapped red sources; B controls Emberheart Challenger (2/2) -> A casts Abrade mode 1 targeting Challenger, both pass -> Challenger in B graveyard, Abrade in A graveyard, card count conserved.",
+   "B casts Monstrous Rage targeting Monastery Swiftspear (prowess trigger on stack) -> A responds Abrade on Swiftspear, resolves first -> Swiftspear dies; prowess trigger resolves with no effect; Monstrous Rage fizzles (608.2b), no Monster Role token is created.",
+   "B controls Screaming Nemesis (3/3) -> A Abrades Nemesis -> Nemesis dies to SBA, but its damage trigger still goes on the stack and B deals 3 to any other target chosen by B (e.g. A's face); A can no longer gain life."
+  ]
+ },
+ {
+  "name": "Bitter Triumph",
+  "deck": "A main x1",
+  "summary": "1B instant: as an additional cost discard a card or pay 3 life; destroy target creature or planeswalker.",
+  "rulesNeeded": ["instant-speed cast on the stack", "additional cost: choice of discard a card OR pay 3 life (chosen while casting)", "targeting: creature or planeswalker", "destroy (dies -> graveyard, subject to Kalitas-style replacements)", "fizzle on illegal target (costs not refunded)", "life payment legality check"],
+  "crRefs": ["601.2b (announce additional-cost choice)", "601.2f-h (total cost, pay costs)", "118.8 (additional costs)", "119.4 (can pay life only if life >= amount; paying to 0 is legal)", "608.2b (all targets illegal -> spell does nothing, costs stay paid)", "704.5a (0 life SBA after paying 3)", "700.4 (dies)"],
+  "hiddenInfo": "Hidden in hand until cast. If the discard mode is chosen, the discarded card becomes public; the pay-3-life mode reveals nothing. Hand size drops by 2 with discard mode, which the opponent view must reflect.",
+  "complexity": "simple",
+  "proposal": "Model as one card with two cast variants in the move generator: {mode:'life'} (only legal when life >= 3) and {mode:'discard', card}. Collapse discard choices by card name. The spell is already on the stack when the cost is paid, so it can never discard itself. Pay cost at cast time; on resolution re-check target legality, else move to graveyard with no refund. Destroy routes through the shared die pipeline so Kalitas/Torch/Etching replacements apply.",
+  "scenarioTests": [
+   "A at 3 life, B controls Screaming Nemesis -> A casts Bitter Triumph paying 3 life targeting Nemesis -> Nemesis in B graveyard, no Nemesis damage trigger (destroy is not damage), A at 0 life, SBA: A loses.",
+   "A at 2 life, hand = [Bitter Triumph, Duress] -> legal moves list only the discard-Duress variant, no pay-life variant.",
+   "A casts Bitter Triumph (pay 3 life) on Monastery Swiftspear; B responds by removing it (e.g. Reckless Rage own-target lethal) -> Triumph fizzles, A life stays 3 lower, Triumph in graveyard."
+  ]
+ },
+ {
+  "name": "Blackcleave Cliffs",
+  "deck": "A main x4",
+  "summary": "Fast land: taps for B or R; enters tapped unless you control two or fewer other lands.",
+  "rulesNeeded": ["land play (one per turn, special action)", "mana abilities: choice of B or R", "conditional enters-tapped replacement (count OTHER lands on battlefield at the moment it would enter)", "nonbasic land (Sunspine Lynx count)"],
+  "crRefs": ["305.1-305.2 (playing lands, one per turn)", "116.2a (playing a land is a special action)", "605.1a (mana abilities)", "614.1c-d (enters-tapped is a replacement effect applied on entry, not an ETB trigger)", "614.12? (replacement effects that modify how a permanent enters are checked before it enters)"],
+  "hiddenInfo": "None once played. In hand it is a hidden land; for determinization it is just one of the known 75.",
+  "complexity": "trivial",
+  "proposal": "Static predicate on the card def: entersTapped = (count of lands you control excluding itself) >= 3, evaluated in the zone-move function before the object hits the battlefield. Mana production modeled as one of {B,R}; the payment solver treats it as a dual source. Move generator collapses which identical untapped lands to tap, but keeps land-drop order choices (Cliffs before basics on turns 1-3 is a real sequencing decision the brief asks about).",
+  "scenarioTests": [
+   "A controls 2 lands, plays Blackcleave Cliffs -> Cliffs is untapped and can pay B for Thoughtseize the same turn.",
+   "A controls 3 lands (Swamp, Blood Crypt, Mutavault), plays Blackcleave Cliffs -> Cliffs enters tapped; available mana this turn unchanged.",
+   "A controls 0 lands on turn 1, plays Cliffs, taps for R -> R in pool; mana pool empties at end of step (no mana burn)."
+  ]
+ },
+ {
+  "name": "Blazemire Verge",
+  "deck": "A main x2",
+  "summary": "Untapped land: T: add B always; T: add R only if you control a Swamp or a Mountain.",
+  "rulesNeeded": ["mana abilities", "land types; two mana abilities: {B} unconditional, {R} conditional on controlling a Swamp or Mountain", "land drop (one per turn)", "type-changing effects from Urborg, Tomb of Yawgmoth (every land is a Swamp, including Verge itself)", "nonbasic"],
+  "crRefs": ["605.1a mana abilities", "605.3 activating mana abilities (no stack)", "305.2 one land per turn", "305.6 basic land types grant intrinsic mana (Blood Crypt is Swamp Mountain)", "305.7? setting land type (Urborg adds Swamp)", "613.1d layer 4 type changes"],
+  "hiddenInfo": "None once played; in hand it is hidden. Which color it can tap for is derivable from public battlefield state.",
+  "complexity": "trivial",
+  "proposal": "Land with two mana options; the R option is enabled by the predicate 'controller controls a permanent with subtype Swamp or Mountain' read from a cached per-player land-type bitmask (Swamp, Mountain) recomputed when lands enter/leave or Urborg is present. Payment solver treats Verge as {B} or {B/R-if-enabled}. Collapse identical untapped Verges.",
+  "scenarioTests": [
+   "A controls only Blazemire Verge + Blightstep Pathway (black face). A tries to cast an {R} spell using Verge -> R ability unavailable; spell not castable if no other R source.",
+   "A controls Blazemire Verge + Blood Crypt (tapped). A pays {R} with Verge -> legal, because Blood Crypt is a Mountain even while tapped.",
+   "A controls Blazemire Verge + Urborg, Tomb of Yawgmoth and no other lands -> Verge is itself a Swamp via Urborg, so the R ability is active."
+  ]
+ },
+ {
+  "name": "Blightstep Pathway // Searstep Pathway",
+  "deck": "A main x4",
+  "summary": "Modal DFC land: when you play it, choose the face; it is either an untapped B source (Blightstep) or an untapped R source (Searstep), fixed for as long as it stays on the battlefield.",
+  "rulesNeeded": ["MDFC land: choose face on play", "land drop (one per turn)", "mana abilities", "nonbasic land (counted by Sunspine Lynx ETB)"],
+  "crRefs": ["305.1 playing a land", "305.2 one land per turn", "712.8a DFC has only front-face characteristics outside battlefield/stack", "712.11? playing the back face of a modal DFC", "605 mana abilities"],
+  "hiddenInfo": "Hidden in hand/library as one card. The chosen face is public once played. The face choice locks colours, so determinization must keep it as a distinct card and must not collapse it into a generic dual land.",
+  "complexity": "simple",
+  "proposal": "One card id. The play-land move comes in two variants, {face:B} and {face:R}; the permanent stores the chosen face and its mana ability produces only that colour. Mark it nonbasic. Never collapse the two play variants with each other. When several Pathways are on the battlefield, collapse only the ones showing the same face.",
+  "scenarioTests": [
+   "A's main phase, no land played this turn, hand = [Pathway], lands = [Swamp]. Play Pathway as Searstep. Expected: battlefield has Searstep untapped, tapping it adds exactly {R}, and its B ability is not available. Land drops used = 1.",
+   "Hand = [Pathway, Pathway], land already played this turn. Expected: the legal-move generator offers no land play.",
+   "Library top is Pathway and it is drawn. Expected: B's view shows hand size +1 and no card identity."
+  ]
+ },
+ {
+  "name": "Blood Crypt",
+  "deck": "A main x4",
+  "summary": "Land - Swamp Mountain (taps for B or R). As it enters, you may pay 2 life; if you don't, it enters tapped.",
+  "rulesNeeded": ["land play", "basic land types Swamp and Mountain grant intrinsic B and R mana abilities", "as-enters choice replacement: pay 2 life or enter tapped", "life payment legality (life >= 2)", "nonbasic land (Sunspine Lynx count)", "counts as Swamp for Castle Locthwain and Blazemire Verge, and as Mountain for Verge"],
+  "crRefs": ["305.6 (basic land types grant intrinsic mana abilities)", "614.1c (as-enters effects are replacement effects; the choice is made as it enters)", "119.4 (paying life requires life >= amount; paying down to 0 is legal)", "704.5a (0 life SBA if A pays at 2 life)"],
+  "hiddenInfo": "None once played. The pay-or-tapped choice is public. Life is the key resource against burn, so the choice is a real decision the greedy agent and the search must see.",
+  "complexity": "trivial",
+  "proposal": "Play-land move has two variants {pay:true} (legal only at life >= 2; pruned at life <= 2 because paying to 0 loses) and {pay:false}. Subtypes Swamp and Mountain feed the per-player land-type bitmask. Keep both branches in the generator whenever untapped mana could be used this turn; the greedy agent takes the tapped branch when it has nothing to cast (e.g. T1 with no one-drop).",
+  "scenarioTests": [
+   "A at 20, turn 1, hand [Blood Crypt, Thoughtseize]: play Crypt paying 2 -> Crypt untapped, A at 18, Thoughtseize castable; alternative move: play Crypt tapped -> A at 20, Thoughtseize not castable this turn.",
+   "A at 2 life: legal moves contain only the enters-tapped variant for Blood Crypt.",
+   "A controls Blood Crypt (tapped) and plays Castle Locthwain -> Castle enters untapped (Crypt is a Swamp); Sunspine Lynx ETB counts Crypt as nonbasic."
+  ]
+ },
+ {
+  "name": "Bloodtithe Harvester",
+  "deck": "A main x4",
+  "summary": "BR 3/2; ETB create a Blood token; {T}, sacrifice it: target creature gets -X/-X (X = 2 x Blood tokens you control), sorcery speed only.",
+  "rulesNeeded": ["ETB trigger", "Blood token (artifact: {1},{T}, discard a card, sacrifice: draw a card)", "additional cost: sacrifice self as part of activation cost", "activated ability with tap cost (summoning sickness applies)", "activate only as a sorcery", "targeting: creature", "-X/-X until end of turn (layer 7c) computed on resolution", "toughness <= 0 SBA", "discard as a cost + draw"],
+  "crRefs": ["603.2 / 603.3 (ETB trigger, put on stack when a player would receive priority)", "111.10 (predefined tokens; Blood token definition)", "602.5d (activate only as a sorcery)", "302.6 (summoning sickness blocks {T} abilities)", "601.2h / 602.2 (costs incl. sacrifice paid on activation)", "608.2h (X counted as the ability resolves)", "613.4c (layer 7c P/T modification)", "704.5f (toughness 0 or less)", "701.17? (sacrifice)"],
+  "hiddenInfo": "Blood activation discards a card (becomes public) and draws a card (hidden to opponent). Opponent learns one card that left A's hand; determinization must remove it from the possible-hand set. ETB token and the removal target are public.",
+  "complexity": "moderate",
+  "proposal": "Blood token = artifact token object with one activated ability; share implementation with Treasure. Harvester activation: legal only in A's main phase with empty stack and Harvester untapped and not summoning sick; cost removes Harvester before target resolution; X read at resolution from the count of Blood tokens A controls (sacrificing the Blood in response reduces X). Collapse Blood discard choices by card name. B holds priority after the activation, so pump responses (Monstrous Rage) are modelled.",
+  "scenarioTests": [
+   "A casts Harvester with no Blood tokens -> ETB resolves -> A controls Harvester (3/2) + 1 Blood token.",
+   "Next A turn, B controls Emberheart Challenger (2/2); A activates Harvester targeting it (A has 1 Blood) -> B responds Monstrous Rage on Challenger (prowess +1/+1, +2/+0, role +1/+1 = 6/4; valiant exiles B's top card) -> Harvester ability resolves -2/-2 -> Challenger 4/2 survives; Harvester is in A's graveyard regardless.",
+   "A has Harvester untapped, 1 Blood, 1 mana open on its own turn; A activates the Blood token (pay 1, tap, discard Fatal Push, sac) in response to its own Harvester activation -> Harvester ability resolves with X = 0 -> target unchanged; Fatal Push visible in A's graveyard in B's view."
+  ]
+ },
+ {
+  "name": "Bonecrusher Giant // Stomp",
+  "deck": "A main x1",
+  "summary": "Adventure card: Stomp (1R instant, damage can't be prevented this turn, 2 damage to any target) then later cast Bonecrusher Giant (2R 4/3) from exile; Giant deals 2 to the controller of any spell that targets it.",
+  "rulesNeeded": ["adventure (cast Stomp half, exile on resolution, later cast creature from exile)", "instant-speed cast on the stack", "targeting: any target (creature, player, planeswalker)", "triggered ability: becomes the target of a spell (spells only, not abilities)", "damage dealt by a permanent's trigger to a player", "'damage can't be prevented' flag (a no-op in this pool: no prevention effects exist)", "creature spell / summoning sickness"],
+  "crRefs": ["715 (Adventurer cards)", "715.3 (casting as an Adventure; only Adventure characteristics on the stack)", "715.4 (resolving Adventure goes to exile; may cast the creature later from that exile; if countered/fizzled it goes to graveyard instead)", "608.2b (fizzle)", "603.2 (triggered abilities)", "615.12? (damage can't be prevented)", "202.3 (mana value on battlefield = 3, relevant to Extinction Event and Fatal Push)"],
+  "hiddenInfo": "Casting Stomp publicly reveals the card; while on an adventure it sits face up in exile and is known to both players (removed from the unknown pool when determinizing A's hidden cards).",
+  "complexity": "moderate",
+  "proposal": "Represent the card with two faces and a zone flag onAdventure:true when in exile after Stomp resolves; move generator offers 'cast Giant from exile' only for that flagged card. Stomp's 'can't be prevented' is a turn-scoped boolean nothing reads, with a test proving no prevention effect exists in the pool (only Stomp and Sunspine Lynx mention prevention). The becomes-target trigger fires in the cast pipeline at target selection (601.2c) whenever the source object is a spell; abilities (Screaming Nemesis trigger, Rockface Village) do not trigger it. Trigger goes on the stack above the spell and resolves first.",
+  "scenarioTests": [
+   "A casts Stomp targeting B's Monastery Swiftspear (1/2) -> Swiftspear dies, Stomp card in A's exile flagged onAdventure -> next A main phase with 3 mana, move list includes 'cast Bonecrusher Giant from exile'.",
+   "A controls Bonecrusher Giant, B at 10 casts Reckless Rage targeting Giant (4) and own Swiftspear (2) -> Giant trigger resolves first: B at 8; then Rage resolves: Giant (4/3) dies.",
+   "B's Screaming Nemesis is dealt damage and its trigger targets A's Bonecrusher Giant -> no Giant trigger (ability, not spell); B life unchanged."
+  ]
+ },
+ {
+  "name": "Burst Lightning",
+  "deck": "B main x4",
+  "summary": "R instant: 2 damage to any target; with kicker {4} (total 5 mana) deals 4 instead.",
+  "rulesNeeded": ["instant-speed cast on the stack", "optional additional cost: kicker (announced at cast, remembered on the spell)", "targeting: any target (creature, player, planeswalker)", "damage to creature / player / planeswalker (loyalty loss)", "target legality recheck on resolution (fizzle)", "SBAs after resolution: lethal damage, 0 life, 0 loyalty"],
+  "crRefs": ["702.33 (kicker; 702.33d 'if kicked')", "601.2b (announcing additional/optional costs)", "601.2f (total cost)", "115.4 ('any target' = creature, player, planeswalker, battle)", "120.3 (results of damage: 120.3a life loss, 120.3c loyalty loss, 120.3e damage marked on creatures)", "608.2b (all targets illegal -> spell does nothing)", "704.5a, 704.5g, 704.5i (SBAs: 0 life, lethal damage, 0 loyalty)"],
+  "hiddenInfo": "Hidden while in hand (a key card A's determinization must sample: B holding 0-4 Burst decides whether A can safely tap out). Once cast, target and kicked status are public.",
+  "complexity": "simple",
+  "proposal": "Spell object carries {kicked:boolean, target}. Resolve: amount = kicked ? 4 : 2; route through dealDamage(source, target, n) so replacement effects (Soul-Scar Mage) and post-damage triggers hook in one place. Move generator: generate the kicked variant only when 5 mana is available; collapse player-targeting to opponent face.",
+  "scenarioTests": [
+   "A controls Sheoldred (4/5) with 0 damage; B casts unkicked Burst Lightning on it -> Sheoldred has 2 damage marked, survives; damage removed at cleanup.",
+   "B has 5 lands, casts kicked Burst on Sheoldred (toughness 5) -> survives with 4 damage; if it already had 1 combat damage marked -> dies to SBA 704.5g.",
+   "B targets A's Bloodtithe Harvester with Burst; A responds by sacrificing Harvester -> Burst fizzles on resolution (608.2b); B's prowess triggers from the cast still resolved."
+  ]
+ },
+ {
+  "name": "Castle Locthwain",
+  "deck": "A main x1",
+  "summary": "Land that enters tapped unless you control a Swamp; T: add B; {1}{B}{B},T: draw a card, then lose life equal to cards in hand.",
+  "rulesNeeded": ["mana abilities", "enters-tapped replacement effect conditioned on controlling a Swamp", "land types (Swamp via Blood Crypt, basic Swamp, Urborg)", "activated non-mana ability on the stack (card draw + life loss)", "life loss (not damage)"],
+  "crRefs": ["614.1c enters-tapped replacement", "614.12? checking enters replacements before the permanent exists", "305.6 basic land types", "602.2 activating abilities", "605.1a mana abilities", "119.3 life loss is not damage", "704.5a 0 life SBA"],
+  "hiddenInfo": "Drawn card is hidden from the opponent; hand size (and so the life loss amount) is public.",
+  "complexity": "simple",
+  "proposal": "Enters-tapped check at land-play time using the same Swamp bitmask as Blazemire Verge (Castle itself is not a Swamp unless Urborg is out). The draw ability is a normal stack ability; resolve as draw 1 then loseLife(handSize). With Sheoldred out, the draw trigger (+2) goes on the stack after the ability finishes resolving, so the life loss happens first; SBA for 0 life is checked before the gain.",
+  "scenarioTests": [
+   "A controls no Swamp (only Blackcleave Cliffs), plays Castle Locthwain -> it enters tapped.",
+   "A controls Swamp, plays Castle -> untapped. A at 10 life with 2 cards in hand activates draw -> resolves: hand 3, life 7.",
+   "A at 3 life with 2 cards in hand, Sheoldred on battlefield, activates Castle -> hand 3, life 0; SBA check happens before Sheoldred's +2 trigger resolves, so A loses the game."
+  ]
+ },
+ {
+  "name": "Den of the Bugbear",
+  "deck": "B main x1",
+  "summary": "Red-producing land that enters tapped if you control two or more other lands. For {3}{R} it becomes a 3/2 Goblin land creature until end of turn, and whenever it attacks it creates a tapped-and-attacking 1/1 Goblin token.",
+  "rulesNeeded": ["conditional enters-tapped replacement (land count)", "mana abilities", "manland animation until end of turn (type + P/T setting)", "summoning sickness applies to the animated land", "attack trigger", "token created tapped and attacking", "damage wears off at cleanup; animation ends at cleanup", "nonbasic"],
+  "crRefs": ["614.1c / 614.12? enters-tapped replacement", "302.6 summoning sickness (must be controlled continuously since the turn began)", "613.1d layer 4 type change, 613.4b layer 7b P/T setting", "508.1 declare attackers; 508.3a attack triggers", "508.4 creature put onto battlefield attacking was never declared as an attacker (does not trigger 'whenever attacks')", "111.1 tokens", "514.2 cleanup removes damage and ends 'until end of turn' effects", "704.5d tokens outside the battlefield cease to exist"],
+  "hiddenInfo": "None beyond being hidden in hand/library. The activation and the token are public.",
+  "complexity": "moderate",
+  "proposal": "Share one manland implementation with Mutavault (in both decks) and Hive of the Eye Tyrant: the permanent gets an animatedUntilEOT overlay {types, subtypes, power, toughness, grantedAbilities}; characteristics are computed on read from base plus overlay (type, then P/T set, then counters and pumps). The ETB check counts other lands at the moment it enters. The attack trigger creates a Goblin token with tapped=true, attacking=true and the same defender as the Den; the token skips declare-attacker triggers. The overlay is cleared at cleanup. Legal-move pruning: offer the animation only in B's main phase or beginning of combat before attackers are declared, or in response to a spell or ability. What is lost: activating it at odd times such as the opponent's end step, which never matters in this matchup.",
+  "scenarioTests": [
+   "B controls Mountain, Mutavault, and plays Den as the 3rd land. Expected: Den enters tapped. With only one other land: Den enters untapped.",
+   "B's turn, Den controlled since the start of the turn, 4 other red sources. Activate {3}{R}, attack with Den. Expected: Den is a 3/2 attacking creature, and a 1/1 red Goblin token is on the battlefield tapped and attacking the same player. No second attack trigger fires for the token.",
+   "Den was animated and dealt 1 damage in combat. End of turn cleanup. Expected: Den is a noncreature land again with 0 damage marked. The Goblin token remains as a 1/1 creature."
+  ]
+ },
+ {
+  "name": "Duress",
+  "deck": "A main x2, side x1",
+  "summary": "B sorcery: target opponent reveals their hand; you choose a noncreature, nonland card from it; they discard it.",
+  "rulesNeeded": ["sorcery-speed cast on the stack", "targeting: opponent (player)", "hand disclosure: whole hand revealed to all players", "caster chooses a noncreature nonland card (may be none)", "discard to graveyard", "knowledge tracking for per-player view and determinization"],
+  "crRefs": ["115.1 (targeting a player)", "701.16? (reveal)", "701.8? (discard)", "608.2c (follow instructions in order)", "400.2 (hand is a hidden zone)", "601.2i (Magebane Lizard counts it as a noncreature spell cast)"],
+  "hiddenInfo": "Same as Thoughtseize: on resolution B's entire hand becomes known to A; every card instance that stays in B's hand keeps knownTo[A] = true until it leaves the hand; new draws are unknown. No life loss.",
+  "complexity": "simple",
+  "proposal": "Shared reveal implementation with Thoughtseize: reveal sets knownTo for both players on every card in the target's hand, then the caster gets a choice node over legal cards collapsed by name (filter: noncreature AND nonland), then discard. If no legal card, the reveal still happens and nothing is discarded. Targets in this pool: Burst Lightning, Monstrous Rage, Reckless Rage, Kumano Faces Kakkazan, The Legend of Roku, and post-board Flowstone Infusion, Pyroclasm, Redcap Melee, Scorching Shot, Weathered Runestone; never creatures or lands.",
+  "scenarioTests": [
+   "A casts Duress targeting B with hand [Mountain, Burst Lightning, Monastery Swiftspear] -> choice set = {Burst Lightning}; B discards it; B's remaining hand [Mountain, Swiftspear] is marked known to A; A's life unchanged.",
+   "B's hand = [Mountain, Screaming Nemesis, Mutavault] -> Duress resolves, hand revealed (all three known to A), no discard, no choice node.",
+   "B holds two Monstrous Rage and one Burst Lightning -> the choice set has exactly 2 entries (collapsed by name), not 3."
+  ]
+ },
+ {
+  "name": "Emberheart Challenger",
+  "deck": "B main x4",
+  "summary": "1R 2/2 haste, prowess; valiant: first time each turn it becomes the target of a spell or ability you control, exile your top card and you may play it until end of turn.",
+  "rulesNeeded": ["haste", "prowess (trigger on casting a noncreature spell)", "valiant: once-per-turn trigger on becoming the target of own spell or ability", "exile-and-play (impulse, until end of turn, including playing a land)", "per-turn trigger tracking flag", "exiled card is face up (public)"],
+  "crRefs": ["702.10 (haste)", "702.108 (prowess)", "207.2c (valiant is an ability word)", "603.2 (trigger on becoming a target, fires on cast/activation, before resolution)", "305.2 (playing a land from exile uses the land drop)", "601.2 / 601.3 (casting from a non-hand zone with a permission, normal timing)", "400.7 (exiled card is a new object)"],
+  "hiddenInfo": "Valiant exiles the top card face up: public to both players and removes one card from the hidden library order. Determinization must condition library samples on all revealed exiled cards.",
+  "complexity": "moderate",
+  "proposal": "Model 'playable from exile until end of turn' as a list of {cardId, controller, expiresAtCleanup} permissions checked by the move generator (lands respect the land-drop counter, spells respect normal timing). Valiant flag per permanent resets at cleanup; the flag is set when the trigger fires (on targeting), not on resolution, so it still triggers if the spell later fizzles. Unplayed exiled cards stay in exile when the permission expires. Rockface Village's pump and Reckless Rage's own-creature target also fire valiant.",
+  "scenarioTests": [
+   "B casts Challenger with haste, attacks the same turn -> A takes 2 (no blockers).",
+   "B casts Monstrous Rage targeting Challenger -> both prowess and valiant trigger; top card (Mountain) exiled -> B may play that Mountain as land drop if unused; Challenger resolves to 6/4 trample.",
+   "B targets Challenger with a second spell the same turn -> prowess triggers again, valiant does NOT (once per turn); at cleanup any unplayed exiled card remains in exile and is no longer playable."
+  ]
+ },
+ {
+  "name": "Extinction Event",
+  "deck": "A side x1",
+  "summary": "3B sorcery: choose odd or even on resolution, exile every creature whose mana value has that parity (0 is even).",
+  "rulesNeeded": ["sorcery-speed cast", "choice on resolution (odd/even), untargeted mass effect", "exile (not destroy: no dies triggers, bypasses Kalitas/Torch/Etching replacements)", "mana value computation incl. tokens (0), animated manlands (0), transformed DFC back faces (front-face MV), copy tokens (copied MV)"],
+  "crRefs": ["202.3 (mana value)", "202.3b? (token/copy mana value)", "712.8e? (transformed permanent's MV uses the front face)", "700.4 (dies = battlefield to graveyard; exile is not dying)", "608.2 (choice made during resolution)"],
+  "hiddenInfo": "None beyond the card in hand; the parity choice and exiled creatures are public. Sideboard only.",
+  "complexity": "simple",
+  "proposal": "Two resolution choices exposed to the move generator ('odd','even'); exile all matching creatures in one simultaneous zone move. Centralize manaValue(permanent): tokens 0 unless copies, lands 0, back faces of transform DFCs take the front face's MV (Avatar Roku 4, Etching of Kumano 1, Reflection of Kiki-Jiki 3, Graveyard Glutton 3, Vessel 3). Parity table: odd hits Swiftspear, Soul-Scar Mage, Screaming Nemesis, Etching of Kumano and A's Bonecrusher, Reflection, Trespasser; even hits Emberheart, Sunspine Lynx, Avatar Roku, Magebane Lizard, animated Mutavault/Den and all tokens, plus A's Sheoldred, Harvester, Aetherborn, FOMO, Kalitas.",
+  "scenarioTests": [
+   "B controls Swiftspear, Soul-Scar Mage, Screaming Nemesis, Emberheart; A controls Sheoldred -> A casts Extinction Event choosing odd -> Swiftspear, Soul-Scar, Nemesis in B exile (no Nemesis trigger), Emberheart and Sheoldred remain.",
+   "B controls Avatar Roku (transformed) and an animated Mutavault -> choose even -> both exiled (Roku MV 4, Mutavault MV 0); Mutavault card is in exile, card count conserved.",
+   "A controls Kalitas; B controls Swiftspear -> Extinction Event odd -> Swiftspear exiled, no Zombie token for A (exile is not 'would die')."
+  ]
+ },
+ {
+  "name": "Fable of the Mirror-Breaker // Reflection of Kiki-Jiki",
+  "deck": "A main x4",
+  "summary": "3-mana Saga: I makes a 2/2 Goblin Shaman token that makes a Treasure when it attacks; II rummages up to two; III exiles and returns transformed as Reflection of Kiki-Jiki, a 2/2 that copies a nonlegendary creature with haste (sacrificed at next end step).",
+  "rulesNeeded": ["saga chapters (lore counter on ETB and at precombat main as turn-based action; chapter triggers; sacrifice after final chapter)", "token creation with a granted triggered ability (attack trigger)", "Treasure token (artifact, sac for one mana of any color, mana ability)", "rummage: optional discard up to two then draw that many", "transform DFC: exile and return transformed = new object, summoning sick", "activated ability with {T} on a creature (summoning sickness applies)", "copy token of a creature with exception 'except it has haste'", "delayed trigger: sacrifice at beginning of next end step", "nonlegendary target restriction"],
+  "crRefs": ["714.2 (chapter abilities are triggered)", "714.3a (lore counter as Saga enters)", "714.3b (lore counter as precombat main phase begins; turn-based action)", "714.4 / 704.5s (Saga with lore >= final chapter and no chapter ability on stack is sacrificed; chapter III exiles it first so it is never sacrificed)", "712 (double-faced cards; returning transformed puts the back face up)", "701.28? (transform keyword action)", "400.7 (new object after zone change: Reflection is summoning sick, counters and damage gone)", "302.6 (summoning sickness)", "707.2 (copiable values: printed characteristics plus other copy effects, not animation or counters)", "707.9b? (copy with exceptions becomes part of copiable values)", "111.10a (Treasure token definition)", "603.7 (delayed triggered abilities)", "508.3a? (attack trigger of the Goblin Shaman token)"],
+  "hiddenInfo": "Chapter II: the discarded cards are revealed (public in graveyard), the number drawn is public, the drawn identities are hidden to B. Determinization for B must remove discarded cards from A's unknown pool and keep the draws unknown.",
+  "complexity": "expensive",
+  "proposal": "Faithful with bounded branching. (1) Saga engine shared with Kumano, Roku, Hidetsugu: generic chapter list, lore counter added on enter and as a turn-based action at the start of precombat main, chapter triggers on the stack. (2) Goblin token: token def with onAttack -> createTreasure; Treasure is a mana source the payment solver uses only when lands cannot pay. (3) Chapter II rummage: subsets of size 0-2 of the hand enumerated by distinct card names, capped at 20 options ranked by a heuristic (excess lands first, then dead cards vs aggro). Lost: rare lines where the cap excludes the best discard; documented. (4) Chapter III: zone-move to exile then to battlefield back face, new object id, sick. (5) Reflection copy = a token instance referencing the target's def id (or token def id) plus flags {haste:true, sacAtNextEnd:true}; counters, damage and animation are not copied (707.2). Legal targets are finite: Bloodtithe Harvester, Gifted Aetherborn, Bonecrusher Giant, Graveyard Trespasser/Glutton, Fear of Missing Out, Goblin Shaman token, Zombie token, Pilot token, Demon token, Vessel, animated Mutavault/Hive (pruned: the copy is a noncreature land).",
+  "scenarioTests": [
+   "T3: A casts Fable -> lore 1, chapter I resolves: A controls a 2/2 Goblin Shaman token (summoning sick). A's next turn, precombat main: lore 2 -> chapter II: A discards 2 lands, draws 2 -> hand size unchanged, 2 lands in graveyard visible to B; then the token attacks -> Treasure token created.",
+   "A's third turn with Fable: lore 3 -> chapter III: Fable exiled and returned as Reflection of Kiki-Jiki (new id, sick). Same turn A tries to activate {1},{T} -> illegal (302.6). Next turn A activates targeting Bloodtithe Harvester -> hasty token copy enters, its ETB creates a Blood token, the copy attacks; at the beginning of the end step it is sacrificed (its sac ability is usable in response).",
+   "B kills the Goblin token with Burst Lightning in response to the chapter II trigger -> chapter II still resolves (rummage); lore counters and chapter III unaffected."
+  ]
+ },
+ {
+  "name": "Fatal Push",
+  "deck": "A main x4",
+  "summary": "B instant: destroy target creature with mana value 2 or less, or 4 or less if a permanent left the battlefield under your control this turn (revolt).",
+  "rulesNeeded": ["instant-speed cast on the stack", "targeting: creature", "mana value of permanents incl. tokens (0), animated lands (0) and transformed DFCs (front-face MV)", "revolt: per-turn flag 'a permanent left the battlefield under your control'", "condition checked on resolution; illegal-target fizzle", "destroy"],
+  "crRefs": ["207.2c ability words (revolt has no rules meaning)", "202.3 mana value", "111.? tokens have MV 0 unless copying", "712.8e? transformed DFC uses front-face MV", "608.2b target legality on resolution", "701.7? destroy"],
+  "hiddenInfo": "Hidden in hand. Holding it up is the central decision in the matchup (brief question 3). Opponent determinization must sample it from unseen cards.",
+  "complexity": "simple",
+  "proposal": "Per-player turn flag permanentLeftBattlefieldThisTurn, set by any zone change battlefield->elsewhere for a permanent that player controlled (tokens: Treasure, Blood, Goblin Shaman; creatures dying; bargained sacrifice for Torch the Tower; Liliana at 0 loyalty; Fable exiled by chapter III also counts). Reset at turn start. MV threshold checked at resolution. Move generator prunes Push targets that cannot be destroyed under the current revolt state unless a revolt enabler can still happen before resolution (Treasure sacrificed for mana during casting counts).",
+  "scenarioTests": [
+   "B controls Screaming Nemesis (MV 3). A casts Fatal Push with no revolt -> Push resolves with no effect; Nemesis survives.",
+   "A sacrifices a Treasure for mana earlier this turn, then Pushes Sunspine Lynx (MV 4) -> Lynx destroyed.",
+   "B animates Mutavault and attacks; A Pushes Mutavault -> destroyed (MV 0); A's revolt flag stays false (it was B's permanent)."
+  ]
+ },
+ {
+  "name": "Fear of Missing Out",
+  "deck": "A main x1",
+  "summary": "2-mana 2/3 enchantment creature. On ETB you discard a card, then draw a card. With delirium, the first time it attacks each turn it untaps target creature and adds an extra combat phase after the current one.",
+  "rulesNeeded": ["ETB trigger", "discard then draw", "delirium: count card types in own graveyard", "intervening-if trigger condition", "attack trigger (first time each turn)", "targeting: creature (untap)", "additional combat phase inserted into turn structure", "per-turn 'has attacked' counter per object"],
+  "crRefs": ["603.4 intervening 'if' clause checked on trigger and on resolution", "207.2c ability words (delirium has no rules meaning)", "205.2a card types list (artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, sorcery)", "500.8 additional phases added directly after the specified phase", "506-511 combat phase steps", "701.8? discard", "115.1 targets"],
+  "hiddenInfo": "The discarded card becomes public in the graveyard; the drawn card is hidden from the opponent. Oracle order is discard first, then draw, so the player chooses the discard before seeing the new card. Delirium status is public because graveyards are public.",
+  "complexity": "moderate",
+  "proposal": "The ETB trigger resolves as two sequential sub-steps: a discard choice (collapse identical cards in hand), then draw 1. Delirium = countDistinctTypes(owner graveyard); multi-typed cards such as an enchantment creature count both types; a Room card in the graveyard is an enchantment; Pathway is a land. Turn structure is a phase queue; the trigger's resolution pushes an extra combat phase right after the current combat with no main phase between. Track attacksThisTurn per object, reset at cleanup. The untap target is usually FOMO itself or the best attacker; the generator lists all legal creature targets and the greedy agent picks its own best attacker.",
+  "scenarioTests": [
+   "A casts FOMO with hand [Swamp, Fatal Push]. ETB: discard Swamp. Expected: Swamp in the graveyard, hand = [Fatal Push, top card of library], library size -1. B's view sees the Swamp but not the drawn card.",
+   "A's graveyard contains land, instant, sorcery and creature cards. FOMO attacks for the first time this turn, target = FOMO. Expected: after combat damage FOMO is untapped, and the turn sequence becomes combat, extra combat, main 2. In the extra combat FOMO attacks again and does not trigger (second attack this turn).",
+   "A's graveyard has 3 types only. FOMO attacks. Expected: no trigger goes on the stack and there is no extra combat. Variant: 4 types when the trigger fires, but the graveyard is exiled in response. Expected: the trigger does nothing on resolution (intervening-if)."
+  ]
+ },
+ {
+  "name": "Flowstone Infusion",
+  "deck": "B side x2",
+  "summary": "R instant: target creature gets +2/-2 until end of turn.",
+  "rulesNeeded": ["instant-speed cast on the stack", "targeting: creature (either player's)", "until-end-of-turn P/T delta (layer 7c)", "toughness 0 or less SBA", "prowess and valiant triggers on cast / on targeting own creature", "ward if it targets Graveyard Trespasser"],
+  "crRefs": ["613.4c (layer 7c P/T modification)", "704.5f (toughness 0 or less)", "702.108 (prowess resolves before the pump, so a Swiftspear survives)", "702.21 (ward)", "608.2b (fizzle)"],
+  "hiddenInfo": "Sideboard card; hidden in hand. Post-board only.",
+  "complexity": "trivial",
+  "proposal": "Generic until-EOT P/T delta effect (shared with Monstrous Rage +2/+0 and Ray of Enfeeblement). Generator offers both opposing targets (removal on X/2s: Bloodtithe Harvester, Goblin Shaman token, Reflection, animated Mutavault, damaged Aetherborn or Trespasser) and own targets (pump; prune own targets that would die: toughness after prowess <= 2). No damage is dealt, so Soul-Scar, Etching, Nemesis and Redcap-style checks never see it.",
+  "scenarioTests": [
+   "A controls Bloodtithe Harvester (3/2); B casts Flowstone Infusion on it -> Harvester 5/0, dies to 704.5f, goes to A's graveyard (no damage was dealt, so Etching of Kumano does not exile it).",
+   "B controls Monastery Swiftspear (1/2), casts Flowstone Infusion on it -> prowess resolves first (2/3), then Infusion -> 4/1 until end of turn; at cleanup back to 1/2.",
+   "A's Gifted Aetherborn (2/3) blocked and took 1 damage; B casts Infusion on it post-combat -> toughness 1 with 1 damage marked -> dies to 704.5g."
+  ]
+ },
+ {
+  "name": "Gifted Aetherborn",
+  "deck": "A main x2",
+  "summary": "BB 2/3 deathtouch, lifelink.",
+  "rulesNeeded": ["deathtouch (any nonzero damage is lethal, 704.5h)", "lifelink (life gained simultaneously with damage)", "combat damage assignment incl. trample-vs-deathtouch blocker lethal accounting", "can't-gain-life check (Screaming Nemesis flag, Sunspine Lynx)"],
+  "crRefs": ["702.2 (deathtouch)", "702.15 / 702.15b (lifelink, gain happens as damage is dealt)", "704.5h (deathtouch damage destroys)", "510.1-510.2 (combat damage assignment and simultaneous dealing)", "702.19c (trample: lethal damage to a blocker considers damage already dealt and deathtouch)", "119.7? (player that can't gain life)"],
+  "hiddenInfo": "None beyond hand.",
+  "complexity": "simple",
+  "proposal": "Keywords as bit flags on the creature; dealDamage() marks deathtouch hits and applies lifelink gain through gainLife(), which checks cantGainLife and Sunspine Lynx. Trample attackers blocked by Aetherborn must assign toughness-minus-damage (3) before trampling over; attacker deathtouch does not occur in B's deck, but the rule is kept general.",
+  "scenarioTests": [
+   "B attacks with Monastery Swiftspear (1/2); A blocks with Aetherborn -> Swiftspear dies (deathtouch), Aetherborn survives with 1 damage, A gains 2 life.",
+   "B attacks with Swiftspear pumped by Monstrous Rage (prowess 2/3, +2/+0, role +1/+1 = 5/4 trample); Aetherborn blocks -> B assigns 3 to Aetherborn, 2 to A; Aetherborn dies, Swiftspear dies (deathtouch), A takes 2 and gains 2 simultaneously (net 0).",
+   "A has been dealt damage by Screaming Nemesis earlier (cantGainLife = true); Aetherborn deals 2 combat damage -> damage is dealt, A's life does not change."
+  ]
+ },
+ {
+  "name": "Go Blank",
+  "deck": "A side x2",
+  "summary": "2B sorcery: target player discards two cards of their choice, then exile that player's graveyard.",
+  "rulesNeeded": ["sorcery-speed cast", "targeting: player", "discard chosen by the target player (not the caster)", "sequential instructions: discard, then exile whole graveyard (discarded cards end in exile)", "graveyard exile"],
+  "crRefs": ["115.1 (targets)", "701.8? (discard)", "608.2c (follow instructions in written order)", "406 (exile zone)"],
+  "hiddenInfo": "The caster does not see the hand; only the two discarded cards become public (then sit face up in exile). The opponent's view and determinizer must remove those two cards from B's unknown pool and decrement hand size.",
+  "complexity": "simple",
+  "proposal": "On resolution the target player gets a choice node over unordered pairs of hand cards, collapsed by card name (multiset pairs by distinct names). If the hand has 2 or fewer cards, discard all without a choice. Then move every card in that player's graveyard to exile. Allow targeting either player but let the greedy agent prune self-target. In this matchup B uses nothing from its graveyard, so the exile clause matters only for card-count invariants and Graveyard Trespasser targets. Sideboard only.",
+  "scenarioTests": [
+   "B hand = [Burst Lightning, Burst Lightning, Mountain, Reckless Rage], B graveyard = [Monstrous Rage] -> A casts Go Blank on B -> B's choice set has 4 distinct pairs by name (BL+BL, BL+Mountain, BL+Rage, Mountain+Rage); after resolution B hand size 2, B graveyard empty, 3 cards added to B exile.",
+   "B hand = [Mountain] -> Go Blank on B -> no choice node, Mountain discarded then exiled, B hand empty."
+  ]
+ },
+ {
+  "name": "Go for the Throat",
+  "deck": "A main x1",
+  "summary": "1B instant: destroy target nonartifact creature.",
+  "rulesNeeded": ["instant-speed cast on the stack", "targeting: creature with type restriction (nonartifact)", "destroy (to graveyard, or exile if a replacement like Etching of Kumano applies)", "target legality recheck on resolution", "responding in combat (after attackers, after blockers)"],
+  "crRefs": ["115.1 / 115.2 (targets)", "608.2b (illegal target on resolution -> no effect)", "701.7? (destroy keyword action)", "700.4 ('dies' = put into graveyard from battlefield)", "614 / 616.1 (if the destroyed creature has multiple replacement effects, e.g. Etching and Kalitas, the affected object's controller orders them)"],
+  "hiddenInfo": "Hidden in hand; one of A's hold-up cards, so B's determinization must sample its presence. Public once cast.",
+  "complexity": "trivial",
+  "proposal": "Target filter = isCreature && !isArtifact evaluated at cast and at resolution. Route destruction through the die choke point that checks replacement effects (Etching of Kumano, Kalitas). Move generator offers it at every priority stop where B has a creature (including animated Mutavault/Den and in B's declare-attackers/blockers steps), which is exactly the hold-up-vs-tap-out decision.",
+  "scenarioTests": [
+   "B attacks with animated Mutavault (2/2 land creature) -> A casts Go for the Throat targeting it -> Mutavault destroyed, B loses a land (in graveyard).",
+   "A targets B's Monastery Swiftspear; B responds with Monstrous Rage -> Swiftspear is still destroyed; destroy ignores toughness, prowess and pump are irrelevant (the Role token then goes to the graveyard by SBA).",
+   "Target validity: A's own crewed Reckoner Bankbuster or Unlicensed Hearse (artifact creature) is not a legal target; the move generator never offers it."
+  ]
+ },
+ {
+  "name": "Graveyard Trespasser // Graveyard Glutton",
+  "deck": "A main x2",
+  "summary": "3-mana 3/3 daybound werewolf with ward (discard a card); on ETB or attack exile up to one (night side: two) target card(s) from graveyards, draining 1 per creature card exiled. Night side is a 4/4.",
+  "rulesNeeded": ["transform DFC (daybound/nightbound)", "day/night global designation and turn-start transitions", "ward with non-mana cost (discard a card)", "ETB trigger", "attack trigger", "targeting: card in a graveyard (up to N targets)", "life drain (lose/gain life)", "spells-cast-this-turn counter per player"],
+  "crRefs": ["702.21 ward", "702.21a ward counters unless the cost is paid", "702.145 daybound and nightbound", "730? (day and night; numbered 726 in older CR versions)", "730.3? transition rules (0 spells -> night; 2+ spells -> day)", "712 double-faced cards", "603.6a ETB triggers", "508.3a? attack triggers", "601.2c choosing up-to-N targets"],
+  "hiddenInfo": "Hidden in hand; once on the battlefield both faces are public. Graveyard targets are public. Ward payment reveals the discarded card.",
+  "complexity": "moderate",
+  "proposal": "State gets dayNight: 'none'|'day'|'night' and spellsCastThisTurn per player. At each turn start: if day and the previous turn's active player cast 0 spells -> night; if night and they cast 2+ -> day; flip the face index of all daybound/nightbound permanents. When Trespasser enters with 'none', set 'day'. Ward: when an opponent's spell or ability targets it, put a ward trigger on the stack; on resolution the targeting player chooses to discard a card (if able) or the spell/ability is countered. ETB/attack trigger: the move generator offers only creature-card targets plus 'none' (exiling a noncreature card changes nothing in this matchup; documented simplification). The life-gain half is suppressed by Sunspine Lynx or a Screaming Nemesis lock.",
+  "scenarioTests": [
+   "Day. A casts Trespasser, B's graveyard has Monastery Swiftspear -> ETB trigger exiles Swiftspear, B loses 1, A gains 1.",
+   "B casts Burst Lightning targeting Trespasser with 2 cards in hand -> ward trigger; B discards -> Burst resolves; if B declines or has 0 cards -> Burst countered, Trespasser unharmed.",
+   "Day with Trespasser out; on its own turn B casts 0 spells -> next turn becomes night, Trespasser is a 4/4 Glutton; B later casts 2 spells in one turn -> next turn day, back to 3/3."
+  ]
+ },
+ {
+  "name": "Hidetsugu Consumes All // Vessel of the All-Consuming",
+  "deck": "A side x1",
+  "summary": "3-mana Saga. I: destroy each nonland permanent with mana value 1 or less. II: exile all graveyards. III: exile it and return it transformed as Vessel of the All-Consuming, a 3/3 trample creature that grows a +1/+1 counter whenever it deals damage, and wins the game if it has dealt 10+ damage to a player this turn.",
+  "rulesNeeded": ["saga chapters (lore counter on ETB and at precombat main)", "saga sacrifice SBA", "mass destroy by mana value (includes tokens MV 0, the back face of a transformed permanent uses the front-face MV)", "exile all graveyards", "exile-and-return transformed (new object, summoning sick)", "transform DFC", "trample", "'whenever deals damage' trigger (once per damage event)", "+1/+1 counters", "per-turn per-source per-player damage tally", "intervening-if 'lose the game' trigger"],
+  "crRefs": ["714.2 chapter abilities", "714.3a lore counter as it enters, 714.3b lore counter at precombat main", "714.4 / 704.5s saga sacrificed when lore >= final chapter and no chapter ability on stack", "712.8e? back face of a transformed permanent has the mana value of its front face", "701.28? transform", "400.7 object returning from exile is a new object", "702.19 trample (assign lethal to blockers, rest to player)", "510.1c-d combat damage assignment", "603.4 intervening-if", "104.3e? an effect states a player loses the game", "704.5a SBA life 0"],
+  "hiddenInfo": "Sideboard card, so in games 2-3 B does not know whether it is in A's 75. A determinizer for post-board games must sample A's sideboard configuration and must not read A's actual list. Once on the battlefield everything is public.",
+  "complexity": "expensive",
+  "proposal": "Reuse the saga machinery and the DFC transform-on-return path. Chapter I: filter nonland permanents with computedMV <= 1: B's Swiftspear, Soul-Scar Mage, Kumano saga and Etching of Kumano (MV 1), Role tokens, Den Goblin tokens, and A's own Blood, Treasure and Goblin Shaman tokens. Chapter II: move both graveyards to exile. Chapter III: exile, then create a new object with face = back and summoningSick = true. Vessel: keep damageDealtThisTurn[sourceObjectId][playerId] in turn-scoped state, reset at turn start, recorded only for objects flagged tracksDamageDealt; fire one 'deals damage' trigger per simultaneous event; check the lose condition in the trigger's resolution. Gate the card's inclusion with a sideboard config so game-1 simulations never load it. If schedule slips, exclude it from post-board configs and state that post-board results omit it.",
+  "scenarioTests": [
+   "Battlefield: B has Monastery Swiftspear, Soul-Scar Mage, Emberheart Challenger, Kumano Faces Kakkazan (lore 1), animated Mutavault. A has Fable Goblin Shaman token, 1 Blood token, Bloodtithe Harvester. A casts Hidetsugu Consumes All. Expected after chapter I resolves: Swiftspear, Soul-Scar, Kumano, Goblin Shaman token and Blood token are gone. Emberheart (MV 2), Mutavault (land) and Bloodtithe (MV 2) remain.",
+   "Saga at lore 2, A's next precombat main: lore becomes 3, chapter III triggers and resolves. Expected: the saga is exiled and returns as Vessel 3/3 with no counters and summoning sickness, and the saga-sacrifice SBA does not fire on the new object.",
+   "Vessel with 6 +1/+1 counters (9/9 trample) attacks, blocked by a 2/2. Assign 2 to the blocker and 7 to B. Expected: one damage trigger (+1 counter). B's tally from Vessel is 7, so no loss. In a later combat the same turn (via FOMO extra combat) Vessel deals 3+ more to B. Expected: the tally is 10 or more and B loses the game when the trigger resolves."
+  ]
+ },
+ {
+  "name": "Hive of the Eye Tyrant",
+  "deck": "A main x2",
+  "summary": "Land: enters tapped if you control two or more other lands; T: add B; {3}{B}: until end of turn it becomes a 3/3 black Beholder creature with menace and 'whenever this creature attacks, exile target card from defending player's graveyard'. Still a land.",
+  "rulesNeeded": ["conditional enters-tapped replacement (other-land count)", "mana abilities", "manland animation until end of turn (type + P/T setting + granted abilities)", "summoning sickness applies to the animated land", "menace (can't be blocked except by two or more creatures)", "attack trigger targeting a card in the defending player's graveyard; trigger removed if no legal target", "nonbasic land (Sunspine Lynx count)", "dies as a land card; Fatal Push MV 0; Extinction Event even"],
+  "crRefs": ["614.1c / 614.12? (enters-tapped replacement)", "302.6 (summoning sickness)", "613.1d (layer 4 type change), 613.4b (layer 7b P/T setting), 613.1f (ability-adding)", "702.110 (menace)", "509.1c? (blocking restrictions checked when blocks are declared)", "508.3a? (attack triggers)", "603.3d? (a triggered ability with a target that has no legal target is removed from the stack)", "514.2 (cleanup ends until-end-of-turn effects)"],
+  "hiddenInfo": "None beyond hand/library; activation, attack and the exiled card are public.",
+  "complexity": "moderate",
+  "proposal": "Shared manland overlay with Mutavault and Den: overlay {types:[Creature], subtypes:[Beholder], pt:[3,3], keywords:[menace], grantedAbilities:[attackExileTrigger], expires:cleanup}. Menace enforced in declare-blockers validation: a block assignment with exactly one blocker on a menace attacker is illegal; the generator only enumerates 0 or 2+ blockers for it. The attack trigger targets a card in B's graveyard; B never uses its graveyard, so collapse to 'exile the top creature card if any, else the first card' as a single move, and drop the trigger when B's graveyard is empty (603.3d). Animation offered only in A's main phase, beginning of combat, or in response; prune tapping Hive for its own cost when it then cannot attack.",
+  "scenarioTests": [
+   "A controls Swamp and Blood Crypt, plays Hive -> enters tapped; with only one other land it enters untapped and can tap for B.",
+   "A's turn, Hive controlled since turn start, 4 other mana: A pays {3}{B}, attacks with Hive (3/3 menace). B controls one untapped Swiftspear -> the only legal block declarations are no block; with Swiftspear and Soul-Scar Mage both untapped, a double block is legal and a single block is rejected. Attack trigger exiles a card from B's graveyard if any.",
+   "B casts Burst Lightning on animated Hive during combat (3 toughness, 2 damage) -> survives; kicked Burst (4) -> Hive dies and goes to A's graveyard as a land card; A's land count drops by one and A's revolt flag is set."
+  ]
+ },
+ {
+  "name": "Invoke Despair",
+  "deck": "A side x2",
+  "summary": "1BBBB sorcery: target opponent sacrifices a creature, then an enchantment, then a planeswalker; for each type they can't sacrifice, they lose 2 life and you draw a card.",
+  "rulesNeeded": ["sorcery-speed cast", "targeting: opponent (player)", "opponent-choice edict (sacrifice, not targeting creatures)", "sequential resolution steps with conditional life loss + draw", "enchantment type check (sagas, Etching of Kumano and Role tokens are enchantments)", "heavy colored mana requirement (BBBB)"],
+  "crRefs": ["115.1 (targeting a player)", "608.2c (instructions followed in order)", "701.17? (sacrifice)", "119.3 (life loss)", "121.1 (draw)", "714 (sagas are enchantments)"],
+  "hiddenInfo": "Draws are hidden to the opponent (count public). Opponent's sacrifice choices are public. Sideboard only: game-1 simulations never see it; post-board configs must include it.",
+  "complexity": "moderate",
+  "proposal": "Resolve as three sub-steps; each asks the opponent's agent for a choice among their permanents of that type (collapse identical permanents; Role tokens by (host, role type)). For the random/greedy agents, default heuristic: sacrifice the lowest-value object. Only relevant post-sideboard; gate by deck config.",
+  "scenarioTests": [
+   "B controls Emberheart Challenger and Kumano Faces Kakkazan (saga), no planeswalkers -> A casts Invoke Despair -> B sacrifices Challenger, sacrifices Kumano, loses 2 life; A draws exactly 1 card.",
+   "B controls no creatures, no enchantments -> B loses 6 life, A draws 3.",
+   "B controls Monastery Swiftspear with a Monster Role token attached -> creature step: B sacrifices Swiftspear (Role goes to graveyard by SBA before the enchantment step, so B has no enchantment) -> B loses 2 for the enchantment step and 2 for the planeswalker step; A draws 2. Variant: B also controls Etching of Kumano -> B may sacrifice Etching (an enchantment creature) at either the creature step or the enchantment step."
+  ]
+ },
+ {
+  "name": "Kalitas, Traitor of Ghet",
+  "deck": "A side x1",
+  "summary": "2BB legendary 3/4 lifelink; if a nontoken creature an opponent controls would die, exile it instead and A gets a 2/2 Zombie; {2}{B}, sac another Vampire or Zombie: two +1/+1 counters.",
+  "rulesNeeded": ["replacement effect: 'would die' -> exile + create token (applies to SBA deaths, destroy, sacrifice, -X/-X)", "multiple replacement effects ordered by the affected object's controller", "token creation", "lifelink (combat and noncombat damage)", "activated ability with additional cost: sacrifice another Vampire/Zombie (Bloodtithe Harvester, Gifted Aetherborn, Zombie tokens)", "+1/+1 counters", "legend rule", "can't-gain-life interaction (Sunspine Lynx, Screaming Nemesis)"],
+  "crRefs": ["614.1a ('instead' replacement)", "616.1 (affected object's controller chooses order among replacements, e.g. Torch the Tower, Etching of Kumano)", "700.4 (dies)", "702.15 (lifelink)", "119.7? (can't gain life)", "602.2 (activated ability costs incl. sacrifice)", "704.5j (legend rule)", "704.5g / 704.5f (lethal damage / 0 toughness deaths that get replaced)"],
+  "hiddenInfo": "None; exiled cards and tokens are public. Sideboard only.",
+  "complexity": "moderate",
+  "proposal": "Single moveToGraveyardFromBattlefield(obj, cause) choke point that consults an ordered list of active 'would die' replacements; Kalitas registers one filtered to nontoken creatures controlled by its controller's opponent. When more than one applies (Torch the Tower, Etching of Kumano), emit a choice for the affected creature's controller (B picks the one that gives no Zombie; the heuristic agent hardcodes that). Lifelink is a flag checked in the damage function. Sac ability: collapse identical Zombie tokens into one move.",
+  "scenarioTests": [
+   "A controls Kalitas; B's Monastery Swiftspear is dealt lethal damage by Stomp -> Swiftspear card in B exile, A gets a 2/2 black Zombie token, B graveyard unchanged.",
+   "A controls Kalitas; B casts Reckless Rage (4 to A's Sheoldred, 2 to own Swiftspear with no prowess boost) -> Swiftspear would die: exiled, A gets a Zombie (Kalitas applies to B's own-caused deaths).",
+   "A controls Kalitas and Bloodtithe Harvester, 3 mana -> activate sacrificing Harvester -> Kalitas 5/6, Harvester in A graveyard (Kalitas does not apply to A's own creatures)."
+  ]
+ },
+ {
+  "name": "Kumano Faces Kakkazan // Etching of Kumano",
+  "deck": "B main x4",
+  "summary": "1-mana Saga: I deals 1 damage to each opponent and each planeswalker they control; II the next creature spell cast this turn enters with an extra +1/+1 counter; III returns transformed as Etching of Kumano, a 2/2 haste creature whose static exiles creatures that would die after being dealt damage this turn by a source you controlled.",
+  "rulesNeeded": ["saga chapters", "damage to each opponent and each planeswalker they control", "delayed trigger on next creature spell cast this turn ('enters with' +1/+1 counter)", "+1/+1 counters and -1/-1 counter annihilation", "transform DFC (exile and return, new object)", "haste", "replacement effect: 'would die -> exile instead', conditioned on per-turn damage history by source controller", "multiple replacement effects ordering (vs Kalitas, Torch)"],
+  "crRefs": ["714.2, 714.3a, 714.3b (saga lore counters and chapter triggers)", "120.3a, 120.3c (damage to player -> life loss; to planeswalker -> loyalty loss)", "603.7 (delayed triggered ability from chapter II)", "614.1c ('enters with' counters is a replacement effect)", "704.5q (+1/+1 and -1/-1 counters annihilate as SBA)", "702.10 (haste)", "400.7 (Etching is a new object; haste lets it attack the turn it flips)", "700.4 (dies = battlefield to graveyard; includes sacrifice and destroy, not only lethal damage)", "614.6 / 614.1a (replacement effects that change the destination zone)", "616.1 (affected object's controller chooses order of multiple replacement effects)", "514.2 (damage wears off at cleanup; the 'dealt damage this turn' memory resets at the turn change, not at cleanup)"],
+  "hiddenInfo": "None beyond being in hand. All effects are public. Kumano is a noncreature spell, so casting it triggers prowess and Magebane Lizard.",
+  "complexity": "moderate",
+  "proposal": "Reuse the saga engine. Chapter I: iterate opponents and their planeswalkers (Liliana of the Veil is A's only one). Chapter II: set player flag nextCreatureSpellBonus = true until cleanup; on cast of a creature spell by that player, attach entersWithPlusOne to the spell object and clear the flag (approximation: applied at cast time instead of via a delayed trigger on the stack; lost: a response window no card in either 75 can exploit). Etching: each permanent stores damagedThisTurnBy per player, filled inside dealDamage, cleared at the turn change. In the die choke point, if a battlefield Etching controlled by P exists and the dying creature has P in its set, redirect to exile. -1/-1 counters from Soul-Scar Mage are not damage and do not set the flag.",
+  "scenarioTests": [
+   "B casts Kumano while A is at 20 and controls Liliana of the Veil (3 loyalty) -> chapter I: A at 19, Liliana at 2.",
+   "B's next turn: lore 2 -> chapter II; B casts Monastery Swiftspear -> Swiftspear enters with one +1/+1 counter (2/3). A second creature cast the same turn gets no counter.",
+   "B controls Etching of Kumano; B's Swiftspear deals 1 combat damage to A's Bloodtithe Harvester (3/2), post-combat A sacrifices Harvester for its ability -> Harvester is exiled, not put in graveyard (dies includes sacrifice; it was dealt damage this turn by a B source)."
+  ]
+ },
+ {
+  "name": "Liliana of the Veil",
+  "deck": "A main x1",
+  "summary": "3-mana planeswalker (loyalty 3): +1 each player discards; -2 target player sacrifices a creature; -6 pile-split ultimate.",
+  "rulesNeeded": ["planeswalker loyalty + attacking planeswalkers", "loyalty abilities: sorcery speed, once per turn", "damage to planeswalker removes loyalty (burn, combat, Kumano chapter I)", "SBA: 0 loyalty; legend rule", "symmetric discard with APNAP ordering (simultaneous hidden choices)", "edict: target player sacrifices (targets a player; bypasses ward)", "pile-split ultimate (-6)"],
+  "crRefs": ["306 planeswalkers", "606 loyalty abilities", "606.3 once per turn, sorcery timing", "120.3c damage to planeswalker removes loyalty", "506.3 / 508.1b? attacking planeswalkers", "704.5i 0 loyalty SBA", "704.5j legend rule", "101.4 APNAP simultaneous choices", "701.17? sacrifice", "701.8? discard"],
+  "hiddenInfo": "+1 has both players choose a card from hidden hands, then reveals both. B must not see A's pick before choosing. -2 sacrifice choice is B's and public.",
+  "complexity": "moderate",
+  "proposal": "Standard planeswalker object with loyalty; attack declaration offers each defender (player or planeswalker). +1: A chooses, then B chooses, both applied together. -2: B picks a creature to sacrifice. -6: exact pile splits are exponential, so bound to three heuristic splits (lands vs nonlands, best threat alone vs rest, greedy value-balanced split). Loss: A may miss the best split; reaching 6 loyalty vs mono-red is rare enough not to move win rates. Documented.",
+  "scenarioTests": [
+   "A casts Liliana and +1 with A hand {Duress} and B hand {Burst Lightning, Mountain} -> loyalty 4; A discards Duress, B discards one card of B's choice.",
+   "B controls Monastery Swiftspear and Soul-Scar Mage; A uses -2 targeting B -> loyalty 1; B sacrifices one; Liliana cannot activate again this turn.",
+   "Liliana at loyalty 2; B casts Burst Lightning on Liliana -> loyalty 0, SBA puts her in the graveyard and A's revolt flag becomes true."
+  ]
+ },
+ {
+  "name": "Magebane Lizard",
+  "deck": "B side x4",
+  "summary": "2-mana 1/4. Whenever any player casts a noncreature spell, the Lizard deals damage to that player equal to the number of noncreature spells they have cast this turn.",
+  "rulesNeeded": ["cast trigger (any player, noncreature spell)", "per-player per-turn count of noncreature spells cast", "damage to player", "adventure-half and room-half casts count as noncreature spells; room unlocking and copies do not", "trigger resolves above the spell"],
+  "crRefs": ["601.2i (spell becomes cast; cast triggers)", "603.2 (triggered abilities)", "715.3? (a spell cast as an Adventure has only the Adventure characteristics: Stomp is an instant)", "709.3? (casting one half of a split/room card)", "709.5? (unlocking a door is a special action, not a cast)", "707.10 (copying a spell is not casting it)", "120.3 (damage to a player causes life loss)"],
+  "hiddenInfo": "Sideboard card, so B's post-board configuration is unknown to A. The per-turn cast counts are public.",
+  "complexity": "simple",
+  "proposal": "Add noncreatureSpellsCastThisTurn[player] to the turn state and increment it on cast (not on copy, not on unlock). The trigger computes its damage at resolution from the current count, which includes the spell that triggered it and any cast in response. It applies to B's own spells too: Burst Lightning, Monstrous Rage, Reckless Rage and Kumano all ping B. Damage goes to a player, so Soul-Scar Mage never converts it. Gate on sideboard config.",
+  "scenarioTests": [
+   "B has Magebane Lizard. A casts Thoughtseize (first noncreature spell this turn). Expected: the Lizard trigger resolves first, A takes 1, then Thoughtseize resolves (A loses 2 more).",
+   "Same turn, A casts Fatal Push (second noncreature spell). Expected: A takes 2. A casts Bonecrusher Giant as the creature: no trigger. A casts Stomp: a trigger for 3.",
+   "B controls Magebane Lizard, casts Burst Lightning then Monstrous Rage in one turn. Expected: B takes 1 then 2 (3 total) from their own Lizard. A unlocks Ritual Chamber (special action): no trigger."
+  ]
+ },
+ {
+  "name": "Monastery Swiftspear",
+  "deck": "B main x4",
+  "summary": "R 1/2 haste, prowess.",
+  "rulesNeeded": ["haste (attack the turn it enters)", "prowess: +1/+1 until end of turn whenever its controller casts a noncreature spell (trigger on cast, resolves before the spell)", "until-end-of-turn deltas expire at cleanup", "Kumano chapter II +1/+1 counter interaction"],
+  "crRefs": ["702.10 (haste)", "702.108 (prowess; one trigger per noncreature spell cast, incl. Kumano Faces Kakkazan and The Legend of Roku)", "603.2 (cast triggers go on the stack above the spell)", "514.2 (cleanup ends until-end-of-turn effects)", "704.5q (counter annihilation if Soul-Scar-style counters ever land on it; not reachable in this pool since A has no -1/-1 effects)"],
+  "hiddenInfo": "None beyond hand/library. It is 4 of B's 60 and the most common turn-1 play, so keep/mulligan evaluation for A must weigh it.",
+  "complexity": "trivial",
+  "proposal": "Keyword flags haste and prowess on the def; prowess is a listener on the cast event filtered to controller == caster and spell is noncreature (instants, sorceries, sagas). Each trigger is a real stack object (so A can kill it in response to the trigger, fizzling the pump). Prowess stacking: two spells in a turn = two separate +1/+1 deltas.",
+  "scenarioTests": [
+   "B T1 Mountain, Swiftspear, attack -> A takes 1. B T2 casts Kumano Faces Kakkazan precombat -> prowess trigger resolves: Swiftspear 2/3; attacks for 2; at cleanup back to 1/2.",
+   "B casts Monstrous Rage on Swiftspear; A responds with Fatal Push on Swiftspear -> Push resolves first, Swiftspear dies; prowess trigger resolves with no object; Monstrous Rage fizzles.",
+   "B casts Burst Lightning and Reckless Rage in one turn -> Swiftspear gets two separate +1/+1 deltas (3/4 until end of turn)."
+  ]
+ },
+ {
+  "name": "Monstrous Rage",
+  "deck": "B main x4",
+  "summary": "R instant: target creature gets +2/+0 until end of turn and gets a Monster Role token attached (+1/+1, trample).",
+  "rulesNeeded": ["instant-speed cast on the stack", "targeting: creature", "prowess and valiant triggers on cast/target", "temporary P/T buff until end of turn", "Role token: Aura token attached, static +1/+1 and trample", "Role uniqueness SBA (newer Role from the same controller replaces the older)", "Aura falls off when the host stops being a creature (Mutavault, Den of the Bugbear)", "trample"],
+  "crRefs": ["303.4? (Auras and attachment)", "704.5m (Aura attached illegally goes to graveyard)", "704.5? (Role SBA: only the newest Role from the same controller stays; letter uncertain)", "111.10? (Role token definition)", "702.19 (trample)", "613.4c (layer 7c P/T)", "608.2b (fizzle if target illegal)"],
+  "hiddenInfo": "None; a common trick, so its presence in B's sampled hand is what the ISMCTS needs to model (4 copies).",
+  "complexity": "moderate",
+  "proposal": "Implement Role as an Aura token object {attachedTo, roleType} and fold Monster Role's +1/+1 and trample into the creature's computed stats (continuous-effect pass). Only one Role type exists in this matchup, so the replacement SBA reduces to 'keep the newest Monster Role per controller per host'. Role tokens on a land-creature are removed by SBA when the land stops being a creature at cleanup (the cleanup step repeats, 514.3a). Role tokens are enchantments (Invoke Despair) with MV 0 (Hidetsugu I).",
+  "scenarioTests": [
+   "B controls Monastery Swiftspear (1/2), casts Monstrous Rage on it -> prowess resolves then Rage -> Swiftspear 5/4 trample (1+1+2+1 / 2+1+1); at cleanup +2/+0 and prowess end -> 2/3 trample remains with the Role.",
+   "B casts a second Monstrous Rage on the same creature -> new Role attaches, old Role goes to graveyard by SBA (only one Monster Role on it).",
+   "B animates Mutavault (2/2), casts Monstrous Rage on it and attacks -> at end of turn Mutavault stops being a creature, Role token goes to graveyard (704.5m) then ceases to exist."
+  ]
+ },
+ {
+  "name": "Mountain",
+  "deck": "B main x14",
+  "summary": "Basic land: tap for R.",
+  "rulesNeeded": ["land play (one per turn, main phase, empty stack)", "mana abilities (no stack)", "basic land type Mountain", "identical-land move collapsing"],
+  "crRefs": ["305.2 (one land per turn)", "305.6 (basic land types grant intrinsic mana ability)", "605.1a / 605.3b (mana abilities don't use the stack)", "106.4 (mana empties between steps/phases)"],
+  "hiddenInfo": "Hidden while in hand/library. The single biggest share of B's unknown pool (14 of 60), so determinization sampling must weight it correctly; once played it is public.",
+  "complexity": "trivial",
+  "proposal": "All untapped Mountains are fungible: the move generator emits at most one 'play Mountain' move and mana payment picks any untapped Mountain. Auto-tap solver prefers Mountains over lands with costs (Ramunap Ruins life) or restrictions (Rockface Village creature-only R). Basic: not counted by Sunspine Lynx. Becomes a Swamp under Urborg (harmless).",
+  "scenarioTests": [
+   "B hand = [Mountain, Mountain, Burst Lightning], no land played this turn -> legal moves contain exactly one 'play Mountain' -> after playing, a second land play is illegal.",
+   "B controls 2 untapped Mountains and 1 untapped Ramunap Ruins, casts Burst Lightning -> auto-tap uses a Mountain, B life unchanged."
+  ]
+ },
+ {
+  "name": "Mutavault",
+  "deck": "A main x4; B main x4",
+  "summary": "Land that taps for C; {1}: becomes a 2/2 creature with all creature types until end of turn (still a land).",
+  "rulesNeeded": ["mana abilities: colorless", "manland animation: activated ability (not a mana ability) adds creature type and sets base P/T until end of turn", "summoning sickness applies to the land-creature (must have been controlled since start of turn to attack or tap)", "land as creature: targetable by creature removal, dies to damage, blocks", "end-of-turn effects expire at cleanup alongside damage removal", "'all creature types' (Rockface Village pump target; Kalitas sac as a Vampire/Zombie)"],
+  "crRefs": ["305.1 (land play)", "605.1a (its {T}: Add {C} is a mana ability; the animation ability is NOT a mana ability and uses the stack)", "302.6 (summoning sickness applies to a land that became a creature)", "613.1d (layer 4 type-changing), 613.4b (layer 7b P/T setting)", "611.2 / 514.2 ('until end of turn' effects and damage end in cleanup)", "205.3m? (all creature types)", "508.1a (tapped creatures cannot attack; 509.1a tapped creatures cannot block)"],
+  "hiddenInfo": "None (public land). It is in BOTH decks; card ownership is public so a revealed Mutavault belongs to the player who owns it in determinization.",
+  "complexity": "moderate",
+  "proposal": "Model animation as a temporary overlay record {objectId, addTypes:['Creature'], allCreatureTypes:true, basePT:[2,2], expires:'cleanup'} evaluated by the characteristics function. No general layer system: the only layer interactions in these 75s are animation (L4, L7b) plus pumps/counters (L7c-d). Move generator prunes self-defeating lines: tapping Mutavault itself to pay the {1} leaves it tapped and unable to attack or block, so that payment is offered only when no other source exists; animating outside combat/blocking windows is pruned unless in response to something.",
+  "scenarioTests": [
+   "A controls Mutavault since start of turn plus 1 other land: A pays {1} from the other land -> Mutavault is a 2/2 creature land, attacks, B takes 2. At cleanup it is a noncreature land again with no damage.",
+   "A plays Mutavault this turn and animates it -> cannot attack (302.6); can still block on B's turn if animated then.",
+   "B animates Mutavault and attacks; A blocks with Gifted Aetherborn (deathtouch 2/3) -> Mutavault dies and goes to B's graveyard as a land card; B's land count drops by one."
+  ]
+ },
+ {
+  "name": "Petrified Hamlet",
+  "deck": "A side x2",
+  "summary": "Colorless land: as it enters, choose a land card name; non-mana activated abilities of sources with that name can't be activated, and lands with that name gain T: add {C}.",
+  "rulesNeeded": ["ETB trigger with a named-card choice", "static ability restricting activated abilities (all zones incl. hand for channel)", "mana abilities exempt", "ability-granting static effect", "mana abilities"],
+  "crRefs": ["603.6a ETB triggers", "605.1a mana abilities", "602.5? restrictions on activation", "613.1f layer 6 ability-adding", "201.3? choosing a card name"],
+  "hiddenInfo": "Chosen name is public. The engine limits the choice to land names in both fixed 75s, which assumes A knows B's exact list (a small information overstatement vs a real player). Sideboard only.",
+  "complexity": "simple",
+  "proposal": "On the ETB trigger, A chooses from land names with non-mana activated abilities across both 75s: Mutavault, Den of the Bugbear, Ramunap Ruins, Sokenzan (channel from hand is blocked), Rockface Village, Castle Locthwain, Hive of the Eye Tyrant, Takenuma. Store chosen names on the state; activation legality filters by source name. Naming Mutavault also shuts off A's own Mutavaults. Post-board only.",
+  "scenarioTests": [
+   "A plays Hamlet naming Den of the Bugbear; B cannot activate Den's {3}{R} animation but can still tap it for R or C.",
+   "Hamlet names Sokenzan; B holds Sokenzan -> channel is not offered by the move generator.",
+   "B animated Mutavault this turn; A plays Hamlet naming Mutavault -> it stays a 2/2 until end of turn but cannot animate next turn; A's own Mutavaults also cannot animate."
+  ]
+ },
+ {
+  "name": "Pyroclasm",
+  "deck": "B side x2",
+  "summary": "2-mana sorcery: 2 damage to each creature (both sides).",
+  "rulesNeeded": ["sorcery-speed cast", "mass damage to each creature (simultaneous)", "SBA lethal damage", "replacement: Soul-Scar Mage turns damage to opponent's creatures into -1/-1 counters", "damage-dealt triggers (Screaming Nemesis)"],
+  "crRefs": ["307.1 sorcery timing", "120.2 / 120.3 damage results", "614.1a replacement effects (Soul-Scar Mage)", "704.5f toughness 0, 704.5g lethal damage SBAs"],
+  "hiddenInfo": "Sideboard card, unknown to A post-board. Thoughtseize/Duress can reveal and take it.",
+  "complexity": "trivial",
+  "proposal": "One damage event to every creature (animated manlands included), dealt simultaneously and then SBAs checked once. Route each creature through the generic damage pipeline so Soul-Scar Mage's replacement and Screaming Nemesis's trigger apply without special cases.",
+  "scenarioTests": [
+   "Battlefield: B has Swiftspear 1/2 and Screaming Nemesis 3/3. A has Bloodtithe Harvester 3/2, Gifted Aetherborn 2/3, Fable Goblin token 2/2, Sheoldred 4/5. B casts Pyroclasm. Expected: Swiftspear, Harvester and the Goblin die. Aetherborn and Sheoldred survive with 2 damage. Nemesis survives and triggers: 2 damage to any other target.",
+   "Same, but B also controls Soul-Scar Mage. Expected: A's creatures get two -1/-1 counters each instead of damage. Aetherborn becomes 0/1 and survives, Sheoldred becomes a permanent 2/3, and Harvester (1/0) dies to the toughness-0 SBA. Soul-Scar Mage itself takes 2 damage and dies (the replacement covers only opponent's creatures)."
+  ]
+ },
+ {
+  "name": "Ramunap Ruins",
+  "deck": "B main x2",
+  "summary": "Land - Desert. T: add C; T, pay 1 life: add R; {2}{R}{R}, T, sacrifice a Desert: this land deals 2 damage to each opponent.",
+  "rulesNeeded": ["mana abilities, one with an additional life cost (still a mana ability, no stack)", "life payment legality (life >= 1)", "activated ability on the stack with tap and sacrifice-a-Desert costs (may sacrifice itself; the only Deserts in the pool are the two Ruins)", "damage to each opponent from a land source using last known information after it is sacrificed", "instant-speed activation (reach at the opponent's end step or in response)", "nonbasic land (Sunspine Lynx count)"],
+  "crRefs": ["605.1a (a mana ability may have additional costs such as paying life)", "119.4 (paying life requires life >= amount)", "602.2 (activating abilities; costs paid on activation incl. tap and sacrifice)", "113.7a / 608.2h (ability on the stack uses last known information of its source after it leaves the battlefield)", "120.3a (damage to a player causes life loss)", "205.3i (Desert is a land subtype)"],
+  "hiddenInfo": "None once played. Once on the battlefield it is hidden-hand-independent reach that A's life-total planning must respect.",
+  "complexity": "simple",
+  "proposal": "Land def with three abilities: manaC, manaR {lifeCost:1}, burn {cost:{mana:'{2}{R}{R}', tap:true, sacrificeDesert:true}, instant timing}. The payment solver ranks Ruins' R below Mountains (life cost) and treats the life as a real cost that the greedy agent counts against burn. The burn ability requires four other mana plus tapping Ruins itself, and the Desert sacrificed is Ruins itself unless the second Ruins is preferred (both offered, collapsed when identical). The damage source is a land: Soul-Scar Mage (creature targets only) and Magebane Lizard (spells only) never apply; Etching of Kumano marks nothing because it hits players. Offer the activation in B's main phase, at A's end step, and in response to lethal-relevant events; prune elsewhere.",
+  "scenarioTests": [
+   "B controls Ramunap Ruins and 1 Mountain, B at 20; B casts Burst Lightning paying with Ruins' R -> B at 19; paying with the Mountain instead leaves B at 20 (solver default).",
+   "B controls Ramunap Ruins and 4 Mountains, A at 2: B activates {2}{R}{R}, T, sacrifice Ruins -> ability on the stack with Ruins in the graveyard; resolves: A takes 2 and loses (704.5a). B's land count drops by one.",
+   "B controls two Ramunap Ruins: activating one may sacrifice the other as the Desert; the activated Ruins stays on the battlefield tapped."
+  ]
+ },
+ {
+  "name": "Ray of Enfeeblement",
+  "deck": "A side x1",
+  "summary": "B instant: target creature gets -4/-1 until end of turn (-4/-4 if white).",
+  "rulesNeeded": ["instant-speed cast on the stack", "targeting: creature", "temporary P/T modification (negative power)", "color check on resolution", "creatures with 0 or less power deal no combat damage", "toughness <= 0 SBA"],
+  "crRefs": ["613.4c (layer 7c)", "510.1a (creature with 0 or less power assigns no combat damage)", "704.5f (toughness 0 or less)", "608.2h? (color checked on resolution)"],
+  "hiddenInfo": "None beyond hand; sideboard only.",
+  "complexity": "simple",
+  "proposal": "Generic until-EOT P/T delta effect; the white branch is a color check (no white creatures exist in B's 75, so it never fires, but keep it correct). It deals no damage, so it does not trigger Screaming Nemesis and is not affected by damage replacement.",
+  "scenarioTests": [
+   "B attacks with Screaming Nemesis (3/3); A casts Ray on it before damage -> Nemesis is -1/2, deals no combat damage, no damage trigger.",
+   "B controls a Den of the Bugbear 1/1 Goblin token -> Ray kills it (toughness 0).",
+   "Emberheart Challenger (2/2) took 1 damage earlier this turn; Ray resolves -> toughness 1 with 1 damage marked -> dies to SBA 704.5g."
+  ]
+ },
+ {
+  "name": "Reckless Rage",
+  "deck": "B main x4",
+  "summary": "R instant: 4 damage to target creature you don't control and 2 damage to target creature you control (both targets required).",
+  "rulesNeeded": ["instant-speed cast on the stack", "multi-target spell with different target restrictions (both required to cast)", "partial fizzle: resolves for legal targets only", "noncombat damage to creatures, lethal-damage SBA", "prowess/valiant triggers from casting and targeting own creature (resolve before Rage)", "replacement: Soul-Scar Mage turns the 4 damage into -1/-1 counters", "damage triggers: Screaming Nemesis as own target"],
+  "crRefs": ["601.2c (must choose all required targets; can't cast without a creature you control)", "115.1", "608.2b (if one target is illegal, the other still takes damage; all illegal -> fizzle)", "120.3 (damage results)", "704.5g (lethal damage)", "702.108 (prowess)", "614.1 (Soul-Scar Mage replacement)"],
+  "hiddenInfo": "None.",
+  "complexity": "moderate",
+  "proposal": "Target generator produces the cross product (opposing creature x own creature); prune own-target choices to those that survive or gain value (prowess-boosted, Nemesis, valiant Emberheart) plus one sacrificial choice, and collapse identical tokens. Resolution applies damage to each still-legal target; Soul-Scar replacement is checked in the shared damage function for noncombat damage from B sources to A creatures. Branching is the main cost, not rules.",
+  "scenarioTests": [
+   "B controls Monastery Swiftspear (1/2), A controls Bloodtithe Harvester (3/2) -> B casts Rage targeting Harvester and Swiftspear -> prowess trigger resolves first (Swiftspear 2/3) -> Rage resolves: Harvester dies, Swiftspear survives with 2 damage.",
+   "B controls Soul-Scar Mage (1/2) and Screaming Nemesis, A controls Sheoldred (4/5) -> Rage targets Sheoldred and Nemesis -> Sheoldred gets four -1/-1 counters (0/1) instead of damage; Nemesis takes 2 and its trigger deals 2 to Sheoldred -> Sheoldred dies.",
+   "B controls no creatures -> Reckless Rage absent from legal moves."
+  ]
+ },
+ {
+  "name": "Reckoner Bankbuster",
+  "deck": "A side x1",
+  "summary": "2-mana artifact Vehicle 4/4 with three charge counters; {2},{T}, remove a charge counter: draw a card, and on the last counter also make a Treasure and a 1/1 Pilot token that crews as if power 2 greater; Crew 3.",
+  "rulesNeeded": ["vehicle and crew (tap creatures with total power >= 3; summoning-sick creatures may crew)", "charge counters; enters-with counters", "activated ability with {T} and removing a counter as a cost", "draw a card (hidden info)", "Treasure token", "Pilot token with crew power modification", "artifact creature status while crewed (immune to Go for the Throat)", "summoning sickness only while it is a creature"],
+  "crRefs": ["301.7 (Vehicles; not a creature unless crewed)", "702.122 (crew; 702.122a tapping untapped creatures with total power N; sick creatures can crew)", "302.6 (a crewed Bankbuster that entered this turn cannot attack or use its {T} ability)", "122.1 (counters), 614.1c (enters with charge counters)", "602.1 / 602.2 (activated ability costs including removing counters)", "111.10a (Treasure)", "121.1 (drawing a card)"],
+  "hiddenInfo": "Each activation draws A a hidden card (B knows the count, not the identity). Charge counters are public. Sideboard card: post-board determinizer samples A's configuration instead of reading it.",
+  "complexity": "moderate",
+  "proposal": "Vehicle = artifact with crewedUntilEOT flag; crew action enumerates minimal-sufficient subsets of untapped creatures (collapse: prefer the lowest-value crew set by heuristic, cap options at 4). Pilot token def has crewPowerBonus:2. The card-draw activation is an instant-speed ability; the greedy agent uses it at the opponent's end step when mana would otherwise go unused. Only needed if the engine supports sideboarding; for game-1 simulations it is stubbed out entirely.",
+  "scenarioTests": [
+   "A casts Bankbuster -> 3 charge counters. Next turn A pays {2},{T}, removes a counter -> draws 1 card, 2 counters remain, Bankbuster tapped.",
+   "Third activation removes the last counter -> A draws, then creates a Treasure and a 1/1 Pilot token; next turn Pilot alone crews Bankbuster (1+2 >= 3) and Bankbuster attacks as a 4/4 artifact creature.",
+   "B casts Burst Lightning at crewed Bankbuster -> 2 damage, survives (4 toughness); A's own Go for the Throat can't target it (artifact)."
+  ]
+ },
+ {
+  "name": "Redcap Melee",
+  "deck": "B side x2",
+  "summary": "R instant: 4 damage to target creature or planeswalker; if a nonred permanent is dealt damage this way, its caster sacrifices a land.",
+  "rulesNeeded": ["instant-speed cast on the stack", "targeting: creature or planeswalker", "color check (multicolor B/R counts as red)", "sacrifice a land on resolution", "damage to planeswalker removes loyalty", "interaction with damage replacement (Soul-Scar Mage: no damage dealt, no sacrifice)"],
+  "crRefs": ["105.2 (colors / multicolored)", "120.3 (damage results)", "120.3c (planeswalker loyalty loss)", "608.2b (illegal target)", "614 (replacement effects)", "608.2h (last known information)"],
+  "hiddenInfo": "Hidden in B's hand; sideboard card, so game-1 determinization excludes it and post-board models include it.",
+  "complexity": "simple",
+  "proposal": "Resolve via the shared damage pipeline that returns actual damage dealt after replacements; if > 0 and the permanent was nonred, B sacrifices a land of B's choice. Red Rakdos permanents: Bloodtithe Harvester, Fable Goblin token, Bonecrusher Giant, Fear of Missing Out, Reflection of Kiki-Jiki (no sacrifice). Nonred: Sheoldred, Liliana, Trespasser, Gifted Aetherborn, Kalitas, Mutavault, Hive, Demon token (sacrifice).",
+  "scenarioTests": [
+   "A controls Sheoldred (4/5, black). B casts Redcap Melee on it -> Sheoldred survives with 4 damage; B sacrifices a land.",
+   "A controls Bloodtithe Harvester (B/R). B casts Redcap on it -> Harvester dies; no land sacrifice.",
+   "B controls Soul-Scar Mage, casts Redcap on A's Graveyard Trespasser and pays ward -> Trespasser gets four -1/-1 counters and dies; B does NOT sacrifice a land."
+  ]
+ },
+ {
+  "name": "Rockface Village",
+  "deck": "B main x1",
+  "summary": "Utility land. Taps for {C}, or for {R} that can be spent only on creature spells. {R},{T} at sorcery speed: target Lizard, Mouse, Otter or Raccoon you control gets +1/+0 and haste until end of turn.",
+  "rulesNeeded": ["mana abilities with spending restriction (creature spells only)", "activated ability at sorcery speed", "targeting by creature subtype (Mouse = Emberheart Challenger, Lizard = Magebane Lizard, animated Mutavault has all creature types)", "haste grant until end of turn", "valiant trigger on Emberheart Challenger when targeted", "nonbasic land (Sunspine Lynx)"],
+  "crRefs": ["106.6 (restrictions on how mana can be spent)", "605.1a (mana abilities)", "602.5d (sorcery-speed activation)", "205.3m (creature types)", "702.10 (haste)", "115.1 (targeting and 'becomes the target')", "207.2c (valiant is an ability word)"],
+  "hiddenInfo": "None beyond hand/library. The restricted mana in the pool is public.",
+  "complexity": "moderate",
+  "proposal": "Tag mana in the pool: pool entries {color, restriction?: 'creatureSpell'}. The payment solver may spend restricted mana only on a cost that belongs to casting a creature spell, so not Mutavault/Den activations and not burn. Tap the land as late as possible within payment and let the payment collapse choose C vs restricted R automatically when either works. The pump ability is a normal targeted sorcery-speed activation; targeting fires becomesTarget events that Emberheart's valiant listens to.",
+  "scenarioTests": [
+   "B's main phase: Rockface Village and a Mountain untapped, hand = [Burst Lightning, Emberheart Challenger]. Expected: the move generator allows Emberheart (Rockface restricted R + Mountain) but does not allow Burst Lightning paid with Rockface's R; paying Burst with the Mountain works.",
+   "B controls Emberheart Challenger cast this turn, Mountain + Rockface untapped, precombat main, stack empty. Activate the pump targeting Emberheart. Expected: Emberheart is 3/2 with haste until end of turn, and valiant triggers (exile top card, may play it this turn). A second targeting the same turn does not retrigger valiant.",
+   "It is B's combat step, or the stack is non-empty. Expected: the pump ability is not offered (sorcery speed). Swiftspear (Human Monk) is not a legal target."
+  ]
+ },
+ {
+  "name": "Scorching Shot",
+  "deck": "B side x3",
+  "summary": "RR sorcery: 5 damage to target creature.",
+  "rulesNeeded": ["sorcery-speed cast on the stack", "targeting: creature", "noncombat damage via the shared pipeline (Soul-Scar Mage replacement, Etching of Kumano marking)", "ward if targeting Graveyard Trespasser", "Bonecrusher Giant becomes-target trigger", "SBA lethal damage", "prowess/valiant on cast"],
+  "crRefs": ["307.1 (sorcery timing)", "120.3 (damage results)", "704.5g (lethal damage)", "614.1a (Soul-Scar replacement)", "702.21 (ward)", "608.2b (fizzle)"],
+  "hiddenInfo": "Sideboard card; hidden in hand; post-board only. B's main-deck burn cannot kill Sheoldred alone, so its presence changes how safe Sheoldred is post-board.",
+  "complexity": "trivial",
+  "proposal": "Spell with one creature target and dealDamage(5, isCombat=false). Generator prunes own-creature targets. Kills Sheoldred (toughness 5) outright, the only main-deck B card that does in one spell. With Soul-Scar Mage the damage becomes five -1/-1 counters; the creature then dies to 704.5f and goes to the graveyard even under Etching of Kumano (no damage was dealt).",
+  "scenarioTests": [
+   "A controls Sheoldred (4/5); B casts Scorching Shot on it -> Sheoldred dies to 704.5g; with Etching of Kumano on B's side it is exiled instead.",
+   "B controls Soul-Scar Mage and Etching of Kumano; B casts Scorching Shot on A's Graveyard Trespasser and pays ward by discarding -> Trespasser gets five -1/-1 counters, dies to 704.5f, goes to A's graveyard (not exile).",
+   "B casts Scorching Shot on A's Bonecrusher Giant -> Giant's trigger resolves first (B takes 2), then Giant dies."
+  ]
+ },
+ {
+  "name": "Screaming Nemesis",
+  "deck": "B main x4",
+  "summary": "2R 3/3 haste; whenever it is dealt damage it deals that much damage to any other target; a player dealt damage this way can't gain life for the rest of the game.",
+  "rulesNeeded": ["haste", "'is dealt damage' trigger, fires even if the damage kills it", "targeting: any other target (player, creature, planeswalker; not itself)", "source uses last known information if Nemesis has left", "one trigger per simultaneous damage event (multiple blockers = one trigger for the total)", "persistent player flag: can't gain life (game-long, survives Nemesis leaving)", "interaction with lifelink and Sheoldred lifegain"],
+  "crRefs": ["702.10 (haste)", "603.2 (trigger event)", "115.4 (any target)", "113.7a (ability uses last known info of its source)", "119.7? (can't gain life)", "120.3 (damage results)", "510.2 (combat damage simultaneous)", "Scryfall ruling on Screaming Nemesis: damage from multiple sources at the same time triggers the ability once"],
+  "hiddenInfo": "None beyond hand. The cantGainLife flag is public game state and must be in both views.",
+  "complexity": "moderate",
+  "proposal": "Hook into the central dealDamage event: after a damage event resolves, sum damage dealt to each Nemesis in that event and queue one trigger per Nemesis with amount N; the trigger stores source LKI (controller). Target selection by the controller's agent; collapse to face vs each opposing creature/planeswalker. Player.cantGainLife boolean checked by every life-gain path via gainLife(). Removal that is not damage (Fatal Push, Go for the Throat, Bitter Triumph, Harvester -X/-X, Ray, edicts, Extinction Event) must not trigger it; tests pin that.",
+  "scenarioTests": [
+   "A Abrades Nemesis -> Nemesis dies; trigger resolves: B deals 3 to A; A.cantGainLife = true; A's later Aetherborn lifelink gains 0.",
+   "B attacks with Nemesis; A double-blocks with Gifted Aetherborn (2/3) and Bloodtithe Harvester (3/2) -> Nemesis takes 5 in one event -> exactly one trigger for 5; Nemesis dies (deathtouch), B assigns 3 among blockers; B targets A for 5; Aetherborn's lifelink gain in the same combat damage step already happened (A gains 2 before the trigger).",
+   "A casts Fatal Push on Nemesis -> Nemesis destroyed, no trigger, A.cantGainLife unchanged."
+  ]
+ },
+ {
+  "name": "Sheoldred, the Apocalypse",
+  "deck": "A main x3",
+  "summary": "2BB legendary 4/5 deathtouch; whenever you draw a card gain 2 life; whenever an opponent draws a card they lose 2 life.",
+  "rulesNeeded": ["draw event hook that fires one trigger per card drawn", "triggered abilities on the stack (independent of source once triggered)", "life gain / life loss (loss is not damage)", "'can't gain life' suppression (Sunspine Lynx, Screaming Nemesis)", "deathtouch in combat and noncombat damage", "legend rule", "first-turn draw skip for the player on the play"],
+  "crRefs": ["121.1 / 121.2 (each card drawn is a separate draw event)", "603.2 (triggers)", "603.3b (APNAP ordering)", "113.7a (trigger resolves even if Sheoldred leaves)", "702.2 / 704.5h (deathtouch)", "119.7? (can't gain life)", "704.5a (0 life)", "103.8a (starting player skips first draw)", "704.5j (legend rule)"],
+  "hiddenInfo": "None directly; B's draws are public events (card identity hidden), which the per-player view already exposes as hand size.",
+  "complexity": "moderate",
+  "proposal": "Emit a 'draw' event per card from a single drawCard() function; Sheoldred registers two listeners. Put triggers on the stack (B can respond with burn but the trigger still resolves). Performance shortcut: when no player has a possible instant-speed response (no untapped mana, no channel land in hand), resolve the trigger inline; keep it on the stack otherwise so 'kill Sheoldred in response' lines stay honest. Draw sources in the pool: draw steps, Fable ch. II, Castle Locthwain, Unholy Annex, Blood tokens, FOMO ETB, Bankbuster, Invoke Despair; Legend of Roku ch. I and Emberheart valiant exile rather than draw, so they do not trigger.",
+  "scenarioTests": [
+   "A controls Sheoldred, B at 10 -> B's draw step -> trigger on stack -> resolves: B at 8.",
+   "A controls Sheoldred, B controls Sunspine Lynx, A at 5 -> A's draw step -> A stays at 5 (can't gain life); trigger still resolves as a no-op.",
+   "A controls Sheoldred; B draws for turn, trigger on stack; B responds with Reckless Rage + Burst Lightning killing Sheoldred -> trigger still resolves, B loses 2."
+  ]
+ },
+ {
+  "name": "Sokenzan, Crucible of Defiance",
+  "deck": "B main x1",
+  "summary": "Legendary land that taps for R; Channel {3}{R}, discard it: create two 1/1 colorless Spirit tokens with haste until end of turn, costing {1} less per legendary creature you control.",
+  "rulesNeeded": ["mana abilities", "legendary permanent (legend rule)", "activated ability from hand (channel) at instant speed, discard-self as cost", "cost reduction counting legendary creatures", "token creation, haste until end of turn", "instant-speed blockers/attackers (flash-in tokens)"],
+  "crRefs": ["207.2c (channel is an ability word)", "602.2 / 602.2b (activating abilities; cost determination follows 601.2f)", "601.2f (cost reductions)", "704.5j (legend rule)", "702.10 (haste)", "111.1 (tokens)"],
+  "hiddenInfo": "Hidden in hand. Channelling reveals it (goes to graveyard). The determinizer treats it as either a land drop or a trick; it is one of 23 lands so its presence changes little.",
+  "complexity": "simple",
+  "proposal": "Card def with handAbility {cost:'{3}{R}', costReducer:countLegendaryCreatures, additional:'discardSelf', effect: create 2 Spirit tokens with hasteUntilEOT}. The only legendary creature in B's 75 is Avatar Roku, so the reducer is almost always 0. Move generator offers it at B's own precombat main (hasty attackers), in A's end step, and in A's declare-attackers step (surprise blockers); prune other windows. Blocked by Petrified Hamlet naming Sokenzan.",
+  "scenarioTests": [
+   "B has 4 untapped Mountains and Sokenzan in hand during A's declare attackers step -> B channels -> two 1/1 Spirits enter and can block A's Mutavault.",
+   "B's precombat main with 4 lands: channel -> Spirits attack this turn (haste), deal 2 to A; at cleanup they lose haste, remain on the battlefield.",
+   "B plays Sokenzan as a land and taps for R -> R in pool; its channel ability is no longer available (only works from hand)."
+  ]
+ },
+ {
+  "name": "Soul-Scar Mage",
+  "deck": "B main x4",
+  "summary": "R 1/2 prowess; noncombat damage from B's sources to A's creatures becomes that many -1/-1 counters instead.",
+  "rulesNeeded": ["prowess", "replacement effect: noncombat damage to opponent's creature becomes -1/-1 counters", "persistent -1/-1 counters; +1/+1 and -1/-1 annihilation", "SBA: toughness 0 or less", "combat vs noncombat damage distinction"],
+  "crRefs": ["702.108 (prowess)", "614.1a (replacement effects)", "120.3 (results of damage)", "122 (counters)", "704.5f (toughness 0 SBA)", "704.5g (lethal damage SBA)", "704.5q (counter annihilation)", "613.4c? (layer 7c)", "510.2 (combat damage)"],
+  "hiddenInfo": "None beyond normal zones.",
+  "complexity": "moderate",
+  "proposal": "Route every damage event through dealDamage(source, recipient, amount, isCombat): if the source's controller controls a Soul-Scar Mage, the recipient is a creature an opponent controls, and !isCombat, place -1/-1 counters and return 0 damage dealt; otherwise mark damage. Callers (Redcap Melee, Etching of Kumano, Torch the Tower, Nemesis trigger, Vessel) read the return value. No prevention effects exist in this matchup, and 'damage can't be prevented' does not stop a non-prevention replacement, so no 616 ordering UI is needed; assert this in a test.",
+  "scenarioTests": [
+   "B controls Soul-Scar; B casts Burst Lightning on A's Sheoldred -> Sheoldred has two -1/-1 counters (2/3) permanently; Soul-Scar is 2/3 until end of turn.",
+   "B controls Soul-Scar and Etching of Kumano; kicked Burst Lightning on A's 3/3 Trespasser (ward paid) -> Trespasser dies to 704.5f and goes to the graveyard, NOT exile.",
+   "Soul-Scar attacks and is blocked by Bloodtithe Harvester -> combat damage is normal marked damage, not counters."
+  ]
+ },
+ {
+  "name": "Sunspine Lynx",
+  "deck": "B main x4",
+  "summary": "4-mana 5/4. Static: players can't gain life, and damage can't be prevented. ETB: deals damage to each player equal to the number of nonbasic lands that player controls.",
+  "rulesNeeded": ["static: players can't gain life (lifelink, Sheoldred, Trespasser, Annex, Kalitas all stop)", "static: damage can't be prevented (no prevention effects in either 75, so a no-op flag)", "ETB trigger: damage to each player simultaneously", "count nonbasic lands per player", "SBA life 0, and a simultaneous double loss is a draw"],
+  "crRefs": ["119.7? (an effect that says a player can't gain life; the life-gain event does nothing)", "702.15 (lifelink: damage still dealt, gain blocked)", "615.12? (damage can't be prevented)", "603.6a (ETB triggers)", "704.5a (player at 0 or less life loses)", "104.4a (all players losing simultaneously is a draw)"],
+  "hiddenInfo": "None; the nonbasic land count is public.",
+  "complexity": "simple",
+  "proposal": "canGainLife(player) returns false while any Lynx is on the battlefield (Screaming Nemesis's permanent flag uses the same hook); all life gain goes through one gainLife() function. Implement 'damage can't be prevented' as a flag that the (nonexistent) prevention step checks, covered by a unit test. The ETB trigger deals damage to both players in one event, then the SBA check. Nonbasic lands: Rakdos has Pathway, Blood Crypt, Cliffs, Verge, Mutavault, Castle, Hive, Takenuma, Urborg and Petrified Hamlet; Mono-Red has Mutavault, Den, Rockface, Ramunap Ruins and Sokenzan.",
+  "scenarioTests": [
+   "A controls Blood Crypt, Blackcleave Cliffs, Blightstep Pathway, Swamp (3 nonbasic). B controls 3 Mountain and Mutavault (1 nonbasic). B casts Sunspine Lynx. Expected: A takes 3, B takes 1.",
+   "Lynx on the battlefield. A controls Sheoldred and draws a card. Expected: A's life is unchanged. Gifted Aetherborn deals 2 combat damage: damage is dealt but no life is gained.",
+   "A at 2 life with 2 nonbasics and B at 1 life with 1 nonbasic. B casts Lynx. Expected: both players are at 0 or less at the same SBA check, so the game is a draw."
+  ]
+ },
+ {
+  "name": "Swamp",
+  "deck": "A main x2",
+  "summary": "Basic land: tap for B.",
+  "rulesNeeded": ["land play (one per turn)", "mana abilities (no stack)", "basic land type Swamp (satisfies Castle Locthwain and Blazemire Verge checks)", "basic (not counted by Sunspine Lynx)", "identical-land move collapsing"],
+  "crRefs": ["305.2 (one land per turn)", "305.6 (basic land types grant intrinsic mana ability)", "605.1a (mana abilities don't use the stack)"],
+  "hiddenInfo": "Hidden in hand/library; public once played. Only 2 of A's 25 lands are basic, which matters for Lynx damage and for keep/mulligan evaluation.",
+  "complexity": "trivial",
+  "proposal": "Fungible with other untapped Swamps: one play move, payment picks any. Subtype Swamp feeds the land-type bitmask. Flag basic:true on the def so the Lynx ETB count and any future basic-land checks read it.",
+  "scenarioTests": [
+   "A plays Swamp, taps for B -> B in pool; a second Swamp play the same turn is illegal.",
+   "A controls Swamp and plays Castle Locthwain -> Castle enters untapped; A controls only Blackcleave Cliffs and plays Castle -> enters tapped.",
+   "A controls Swamp, Swamp, Blood Crypt; B casts Sunspine Lynx -> A takes 1 (only Blood Crypt is nonbasic)."
+  ]
+ },
+ {
+  "name": "Takenuma, Abandoned Mire",
+  "deck": "A main x1",
+  "summary": "Legendary land, {T}: add B; channel {3}{B}, discard it: mill 3, then return a creature or planeswalker card from your graveyard to hand; costs {1} less per legendary creature you control.",
+  "rulesNeeded": ["mana abilities", "legend rule (legendary land)", "channel: activated ability from hand with discard-self as cost (instant speed)", "cost reduction by count of legendary creatures (Sheoldred, Kalitas)", "mill 3", "choice from graveyard (creature or planeswalker card)", "land vs spell dual use in the move generator"],
+  "crRefs": ["605 (mana abilities)", "704.5j (legend rule)", "207.2c (channel is an ability word)", "602.1-602.2 (activating an ability from hand)", "601.2f (cost reductions)", "701.13? (mill)", "400.7 (card changing zones is a new object)"],
+  "hiddenInfo": "Milled cards become public (reveals part of A's library order). The returned card moves from a public zone to hand, so the opponent knows one card in A's hand: the per-player view tracks known cards in the opponent's hand through knownTo, and determinization fixes that card in sampled hands.",
+  "complexity": "moderate",
+  "proposal": "Treat channel as a hand-zone activated ability in the move generator (instant timing, cost 4 minus legendary creature count, min colored B). Mill is 3 top-library moves to graveyard; then the controller chooses among creature/planeswalker cards in the graveyard (collapse identical names). The returned card keeps knownTo[B] = true while it stays in hand. Legendary creatures in A's 75: Sheoldred, Kalitas (side). Blocked by Petrified Hamlet naming Takenuma; graveyard emptied by Hidetsugu II or Go Blank means nothing to return (mill still happens).",
+  "scenarioTests": [
+   "A has Takenuma in hand, 4 untapped lands, Graveyard Trespasser and Sheoldred in library top 3 -> A channels -> 3 cards milled; A returns Sheoldred to hand; B's view of A's hand shows 'Sheoldred' as known plus the total count.",
+   "A controls Sheoldred (legendary) -> channel costs {2}{B}; with only 3 lands the move is legal.",
+   "A plays Takenuma as a land and taps for B -> B added to pool; its channel ability is no longer available."
+  ]
+ },
+ {
+  "name": "The Legend of Roku // Avatar Roku",
+  "deck": "B main x1",
+  "summary": "2RR Saga: I exile top 3, may play them until end of your next turn; II add one mana of any color; III exile and return transformed as Avatar Roku (legendary 4/4, firebending 4, {8}: 4/4 flying firebending Dragon token).",
+  "rulesNeeded": ["saga lore counters and chapter triggers", "exile-and-play from exile with duration (impulse, incl. land plays counting as the land drop)", "chapter mana that empties at end of phase", "transform DFC: exile then return transformed (new object, summoning sick)", "firebending: attack trigger adds RRRR lasting until end of combat", "activated ability {8}: create token with flying + firebending", "flying (for the Dragon token)", "legend rule", "mana value of back face = 4 (front face)"],
+  "crRefs": ["714.2 / 714.3b (chapter abilities; lore counter as precombat main begins)", "714.4 / 704.5s (saga sacrifice SBA once the final chapter resolved)", "712 (double-faced cards)", "712.14? (return to battlefield transformed)", "400.7 (returned permanent is a new object)", "302.6 (summoning sickness)", "106.4 (mana empties; firebending mana is an until-end-of-combat exception)", "305.2 (land from exile uses the land drop)", "702.?? (firebending; new keyword from the Avatar set, number to verify)", "702.9 (flying)"],
+  "hiddenInfo": "Chapter I exiles three cards face up: public to both players and removed from B's unknown library pool in determinization; the playable-until timestamp is public. Before chapter I the saga is a hidden 1-of.",
+  "complexity": "expensive",
+  "proposal": "Saga machinery shared with Fable, Kumano, Hidetsugu. Chapter I: move 3 cards to exile tagged playableBy=B, expiresAfterTurn=B's next turn; the move generator adds play/cast-from-exile for tagged cards; expiry clears the tag (cards stay in exile, counts conserved). Chapter II: add one mana, restricted to R in practice (B has only red costs; noted as a collapse). Chapter III: new object Avatar Roku, summoning sick. Firebending: attack trigger adds RRRR to a pool bucket flagged expiresAt='endOfCombat'. Bound the {8} ability: listed whenever 8 mana is actually available, in combat after firebending resolves (4 lands + RRRR) or out of combat from 8 untapped sources. Nothing is lost if the Dragon token is implemented; if cut, document that late-game Roku value is underestimated. Low frequency (1-of) so correctness over speed.",
+  "scenarioTests": [
+   "B casts The Legend of Roku with library top [Burst Lightning, Mountain, Monstrous Rage] -> chapter I: those 3 in B exile, public, playable -> B plays Mountain from exile as land drop, casts Burst Lightning from exile -> at end of B's next turn Monstrous Rage stays in exile, no longer playable.",
+   "Saga at 2 lore counters, B's precombat main -> chapter III -> saga exiled, Avatar Roku enters as a new object, cannot attack this turn.",
+   "B controls non-sick Avatar Roku and 4 untapped Mountains -> attacks -> firebending adds RRRR -> activate {8} during combat -> 4/4 flying Dragon token with firebending; leftover firebending mana empties at end of combat."
+  ]
+ },
+ {
+  "name": "Thoughtseize",
+  "deck": "A main x4",
+  "summary": "B sorcery: target player reveals their hand, you choose a nonland card from it, they discard it; you lose 2 life.",
+  "rulesNeeded": ["sorcery-speed cast on the stack", "targeting: player", "hand disclosure: whole hand revealed to all players", "caster picks a nonland card", "discard to graveyard", "life loss (not damage)", "knowledge tracking for per-player view and determinization"],
+  "crRefs": ["115.1 (targeting a player)", "701.16? (reveal)", "701.8? (discard)", "119.3 (life loss; not damage)", "608.2c (follow instructions in order: reveal, choose, discard, lose life)", "400.2 (hand is a hidden zone)"],
+  "hiddenInfo": "The central hidden-info card. On resolution B's entire hand becomes known to A. A keeps that knowledge for each card instance that remains in B's hand (ids persist while in the same zone, 400.7) until B draws new cards; new draws are unknown. The determinizer for A fixes those known cards and samples only unknown slots. The 2 life matters against aggro.",
+  "complexity": "moderate",
+  "proposal": "Engine side is simple; the information model is the real work: each card instance has knownTo:[bool,bool]. Reveal sets knownTo for all players on every card in the hand; drawing a card creates an instance unknown to the opponent. View function: opponent's hand = list of known cards + count of unknown ones. Determinization samples unknown slots from the opponent's remaining 60/75 minus all public/known cards. Move generator collapses identical-name choices; prunes targeting yourself. Nothing in these decks shuffles hands away, so no memory decay is needed.",
+  "scenarioTests": [
+   "A (20 life) casts Thoughtseize targeting B with hand [Mountain, Burst Lightning, Monastery Swiftspear] -> A chooses Swiftspear, B discards it -> A at 18, B's hand [Mountain, Burst Lightning] both marked known to A.",
+   "View check after the above: B draws a card -> A's view of B's hand shows 2 known cards (Mountain, Burst Lightning) + 1 unknown; A's determinizer samples only the 1 unknown slot.",
+   "B's hand has only lands -> hand is revealed, no card discarded, A still loses 2 life."
+  ]
+ },
+ {
+  "name": "Torch the Tower",
+  "deck": "A side x1",
+  "summary": "R instant with bargain: 2 damage (3 plus scry 1 if bargained) to target creature or planeswalker; a permanent it damaged is exiled if it would die this turn.",
+  "rulesNeeded": ["instant-speed cast on the stack", "additional cost: bargain (optional sacrifice of an artifact, enchantment or token)", "targeting: creature or planeswalker", "scry 1", "replacement effect: die -> exile for the rest of the turn", "revolt enablement (bargain sacrifice sets Fatal Push revolt)"],
+  "crRefs": ["601.2b / 601.2h (additional costs)", "702.166? (bargain)", "701.18? (scry)", "614 (replacement effects)", "700.4 (dies)", "608.2b (illegal target)"],
+  "hiddenInfo": "Scry: A privately sees the top card; B sees only whether it went to the bottom. B's determinization keeps it unknown; A's view keeps it known. Sideboard only.",
+  "complexity": "simple",
+  "proposal": "Cast options: unbargained, or bargain with each distinct sacrificeable class (Treasure, Blood, Goblin Shaman token, Zombie token, Unholy Annex, Fable saga, FOMO, Bankbuster, Hearse), collapsing identical tokens. Sacrifice is paid during casting, so revolt is set immediately. On resolution deal 2 or 3 via the shared pipeline; if actual damage was dealt, tag exileIfDiesThisTurn (cleared at cleanup). The die choke point checks the tag. Only relevant post-sideboard.",
+  "scenarioTests": [
+   "B controls Monastery Swiftspear (1/2); A casts Torch unbargained -> Swiftspear is exiled, not put in the graveyard.",
+   "A bargains a Treasure and Torches Screaming Nemesis (3/3) -> Nemesis exiled; its trigger still deals 3 to another target and, if that is A, A can't gain life for the rest of the game; A scries 1; A's revolt flag is now true.",
+   "B's Sunspine Lynx (5/4) takes 2 from unbargained Torch, survives, then is blocked and dies in combat later that turn -> exiled instead of the graveyard."
+  ]
+ },
+ {
+  "name": "Unholy Annex // Ritual Chamber",
+  "deck": "A main x4",
+  "summary": "Room enchantment. Unholy Annex ({2}{B}): at your end step, draw a card, then if you control a Demon each opponent loses 2 and you gain 2, otherwise you lose 2. Ritual Chamber ({3}{B}{B}): when this door unlocks, create a 6/6 flying Demon token. Cast either half, then pay the locked door's cost at sorcery speed to unlock it.",
+  "rulesNeeded": ["room split card: cast one half; the permanent has locked/unlocked door state", "unlock door: special action at sorcery speed, paying the door's mana cost", "'when you unlock this door' trigger (also fires when the door is unlocked by casting that half)", "end-step trigger with draw and conditional drain/lose life", "Demon subtype check (6/6 flying token)", "flying", "life gain (blocked by Sunspine Lynx / Screaming Nemesis)", "mana value: 8 outside the battlefield; on the battlefield the sum of unlocked doors"],
+  "crRefs": ["709.? (Rooms: casting one half; locked doors have no abilities; unlocking is a special action; section number to verify)", "116.2? (special actions)", "513.1a (end-step 'at the beginning of' triggers)", "702.9 (flying)", "111.1 (tokens)", "119.3 (life gain and loss)"],
+  "hiddenInfo": "In hand it is one hidden card with both halves. Which half was cast and which doors are unlocked is public. The end-step draw is hidden from the opponent.",
+  "complexity": "moderate",
+  "proposal": "Room permanent = {cardId, unlocked:[left,right]}. The cast move comes in two variants (half L, half R). On resolution the chosen door is set unlocked and fires its unlock event, so casting Ritual Chamber directly makes the Demon at once. Add the special-action move 'unlock door X' to the main-phase move list only when the stack is empty and that door is locked; it does not use the stack and is not a cast (no Magebane or prowess trigger). Abilities read only unlocked doors. The end-step trigger checks for a Demon on resolution (only Demons in the pool: the Ritual Chamber token and Reflection copies of it). B's 75 has no enchantment removal, so the Annex always stays.",
+  "scenarioTests": [
+   "A casts Unholy Annex (half L) on turn 3, controls no Demon. A's end step. Expected: draw 1, A loses 2 life. B's view sees A's hand size +1 only.",
+   "A controls Annex with Ritual Chamber locked, 5 lands untapped, main phase, stack empty. A unlocks Ritual Chamber. Expected: no spell is cast (Magebane does not trigger), a 6/6 flying Demon token is created, and at A's end step A draws, B loses 2 and A gains 2.",
+   "Same as the previous test, but B controls Sunspine Lynx. Expected at the end step: A draws, B loses 2, and A's life is unchanged."
+  ]
+ },
+ {
+  "name": "Unlicensed Hearse",
+  "deck": "A side x2",
+  "summary": "2-mana artifact Vehicle: {T}: exile up to two target cards from a single graveyard; its power and toughness each equal the number of cards exiled with it; Crew 2.",
+  "rulesNeeded": ["vehicle and crew 2 (tap creatures with total power >= 2; summoning-sick creatures may crew)", "activated {T} ability usable while a noncreature artifact (no summoning-sickness restriction) but not while it is a creature that came under control this turn", "targeting: up to two cards from one graveyard (both from the same graveyard)", "characteristic-defining ability: P/T = cards exiled with this object (per-object counter, reset if it becomes a new object)", "artifact creature while crewed (not a Go for the Throat target)", "exile from graveyards (removes Takenuma and Trespasser targets, delirium types)"],
+  "crRefs": ["702.122 (crew)", "301.7 (Vehicles)", "302.6 (summoning sickness applies only while it is a creature)", "604.3 (characteristic-defining abilities apply in all zones)", "613.4a? (layer 7a: CDA P/T)", "601.2c (up to N targets; all from a single graveyard)", "400.7 (a Hearse that leaves and returns is a new object with 0 cards exiled with it)"],
+  "hiddenInfo": "None; graveyards and exile are public. Sideboard only.",
+  "complexity": "simple",
+  "proposal": "Object field exiledCount incremented by its own ability; the characteristics function sets P/T from it (CDA before counters). Crew shares the vehicle implementation with Bankbuster (crew power 2; Mutavault, Goblin Shaman, Harvester, Aetherborn and Zombie tokens can crew). Target collapse: for A's own graveyard enumerate pairs by name (they change delirium and Takenuma targets); for B's graveyard collapse to count-only (0, 1 or 2 cards, take the most recent) since B never uses its graveyard. Offer the tap ability at A's end step of the opponent's turn and in main phases; prune elsewhere. Post-board only.",
+  "scenarioTests": [
+   "A casts Hearse (0/0 uncrewed, not a creature). Same turn A taps it targeting two cards in B's graveyard -> both exiled, exiledCount 2 (legal: it is not a creature, so 302.6 does not apply). A's next turn: crew 2 by tapping Bloodtithe Harvester -> Hearse is a 2/2 artifact creature and attacks.",
+   "A crews Hearse the turn it entered -> it is a creature that came under A's control this turn: it cannot attack and its {T} ability cannot be activated this turn (302.6).",
+   "Crewed Hearse with exiledCount 3 is targeted by Go for the Throat -> illegal target (artifact); Fatal Push (MV 2) destroys it; it returns to the graveyard as a card and a re-cast copy starts at 0/0."
+  ]
+ },
+ {
+  "name": "Urborg, Tomb of Yawgmoth",
+  "deck": "A main x1",
+  "summary": "Legendary land: each land (both players') is a Swamp in addition to its other types, so every land can tap for B.",
+  "rulesNeeded": ["land types / type-adding continuous effect (layer 4)", "intrinsic mana ability from basic land type", "legend rule", "conditional land checks that depend on Swamp (Castle Locthwain untapped, Blazemire Verge second ability)", "mana abilities for the opponent's lands too"],
+  "crRefs": ["305.6 (basic land types grant intrinsic mana abilities)", "205.3i (land subtypes)", "613.1d (layer 4 type-changing)", "704.5j (legend rule)", "605 (mana abilities)"],
+  "hiddenInfo": "None beyond hand.",
+  "complexity": "simple",
+  "proposal": "No general layer system: a single global boolean urborgActive (any Urborg on the battlefield) consulted by hasLandType(land, 'Swamp') and by landManaOptions(land) (append B). Castle Locthwain's enters-tapped check and Blazemire Verge's activation condition call hasLandType, so they pick it up. B's Mountains also gain B; harmless but correct. Nothing is lost for this pool.",
+  "scenarioTests": [
+   "A controls Urborg and Blackcleave Cliffs (untapped) -> Cliffs can produce B or R; Urborg itself produces B.",
+   "A has Urborg on the battlefield and no other Swamp; plays Castle Locthwain -> Castle enters untapped.",
+   "A controls Searstep Pathway x2, Urborg, Blood Crypt and Swamp -> can pay {1}{B}{B}{B}{B} for Invoke Despair because every land is a Swamp."
+  ]
+ },
+ {
+  "name": "Weathered Runestone",
+  "deck": "B side x2",
+  "summary": "2-mana artifact: nonland permanent cards in graveyards and libraries can't enter the battlefield; players can't cast spells from graveyards or libraries.",
+  "rulesNeeded": ["static ability (continuous prohibition)", "artifact permanent (legal target for Abrade's destroy-artifact mode)", "zone-origin checks on cast and on enter-the-battlefield"],
+  "crRefs": ["604.1 / 604.2 (static abilities)", "101.2 (can't overrides can)"],
+  "hiddenInfo": "None. Sideboard only.",
+  "complexity": "trivial",
+  "proposal": "No card in either 75 casts from or puts nonland permanents onto the battlefield from a graveyard or library (Takenuma returns to hand; sagas, Bonecrusher, Roku and Emberheart use exile), so the static is inert in this matchup. Implement as a vanilla 2-mana colorless artifact plus a single guard in castSpell/putOntoBattlefield that rejects origin zone graveyard/library while any Runestone is on the battlefield, with a test that the guard exists. Recommend the sideboard plan never board it in against Rakdos (it only gives Abrade a target).",
+  "scenarioTests": [
+   "B casts Weathered Runestone -> artifact on the battlefield -> A's Abrade legal move list includes 'destroy target artifact: Runestone'.",
+   "Unit test on the guard: synthetic state with Runestone on the battlefield and a card flagged castable from graveyard -> cast move absent."
+  ]
+ }
+]
