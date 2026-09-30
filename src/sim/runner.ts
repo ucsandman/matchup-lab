@@ -18,6 +18,8 @@ export interface RunOptions {
   workers?: number;
   /** Games per block (the scheduling and seeding unit). Default 25. */
   blockSize?: number;
+  /** Called after each finished block with the games played so far (the web page's progress line). */
+  onProgress?: (gamesDone: number) => void;
 }
 
 export interface MatchReport {
@@ -74,7 +76,7 @@ export function workerSpec(): { url: URL; execArgv: string[] } {
   return { url, execArgv };
 }
 
-async function runInWorkers(job: MatchJob, blocks: Block[], n: number): Promise<BlockResult[]> {
+async function runInWorkers(job: MatchJob, blocks: Block[], n: number, onProgress?: (gamesDone: number) => void): Promise<BlockResult[]> {
   const { url, execArgv } = workerSpec();
   const results: BlockResult[] = [];
   const queue = [...blocks];
@@ -96,6 +98,7 @@ async function runInWorkers(job: MatchJob, blocks: Block[], n: number): Promise<
           if (failed) return;
           if (msg.error !== undefined || !msg.result) { failed = true; reject(new Error(`worker: ${msg.error ?? 'no result'}`)); return; }
           results.push(msg.result);
+          if (onProgress) onProgress(results.reduce((s, r) => s + r.games.length, 0));
           feed(w);
         });
         w.on('error', (e) => { if (!failed) { failed = true; reject(e); } });
@@ -147,7 +150,10 @@ export async function runMatch(job: MatchJob, opts: RunOptions): Promise<MatchRe
   const blocks = makeBlocks(opts.games, opts.seed, opts.blockSize ?? 25);
   const workers = opts.workers ?? defaultWorkers();
   const t0 = performance.now();
-  const results = workers === 0 ? blocks.map((b) => runBlock(job, b)) : await runInWorkers(job, blocks, workers);
+  let done = 0;
+  const results = workers === 0
+    ? blocks.map((b) => { const r = runBlock(job, b); done += r.games.length; opts.onProgress?.(done); return r; })
+    : await runInWorkers(job, blocks, workers, opts.onProgress);
   const seconds = (performance.now() - t0) / 1000;
   return aggregate(results, job, workers === 0 ? 1 : Math.min(workers, blocks.length), seconds);
 }

@@ -44,7 +44,7 @@ interface DecksPayload { decks: Deck[]; tokens: { name: string }[]; budgets: Rec
 
 describe('web server: static page', () => {
   it('serves index.html, app.js and style.css', async () => {
-    const pages = [['/', 'text/html', 'Rakdos vs Mono-Red'], ['/app.js', 'text/javascript', 'MTGBoard'], ['/style.css', 'text/css', '.tile']] as const;
+    const pages = [['/', 'text/html', 'Rakdos Midrange vs Mono-Red Aggro'], ['/app.js', 'text/javascript', 'MTGBoard'], ['/style.css', 'text/css', '.tile']] as const;
     for (const [path, type, text] of pages) {
       const res = await fetch(base + path);
       expect(res.status).toBe(200);
@@ -52,8 +52,9 @@ describe('web server: static page', () => {
       expect(await res.text()).toContain(text);
     }
     const html = await (await fetch(base + '/')).text();
-    expect(html).toContain('<h1>Rakdos vs Mono-Red: position and opening-hand analyzer</h1>');
-    expect(html).toContain('Click cards to rebuild a game position');
+    expect(html).toContain('>Matchup Lab</a></h1>');
+    expect(html).toContain('Rakdos Midrange vs Mono-Red Aggro (Pioneer). Ask a question, get win rates from thousands of simulated games.');
+    expect(html).toContain(HEURISTIC_SENTENCE);
     console.log(`checked ${pages.length} static files`);
   });
 
@@ -168,6 +169,53 @@ describe('POST /api/hand', () => {
     ];
     for (const [body, msg] of cases) {
       const { status, json } = await post('/api/hand', body);
+      expect(status, JSON.stringify(json)).toBe(400);
+      expect(json.error).toMatch(msg);
+    }
+    console.log(`checked ${cases.length} bad inputs`);
+  });
+});
+
+describe('POST /api/match and GET /api/progress', () => {
+  it('plays agent vs agent games with the match runner: every win rate with n and a CI, the report, the sentence, the progress count', async () => {
+    const idle = (await (await fetch(base + '/api/progress')).json()) as { running: boolean };
+    expect(idle.running).toBe(false);
+    const { status, json } = await post('/api/match', { a: 'greedy', b: 'greedy', games: 6, seed: 3, workers: 2 });
+    expect(status, JSON.stringify(json)).toBe(200);
+    type P = { k: number; n: number; est: number; lo: number; hi: number };
+    const winA = json.winA as P;
+    const winB = json.winB as P;
+    expect(json.games).toBe(6);
+    for (const p of [winA, winB, json.draws as P]) {
+      expect(p.n).toBe(6);
+      expect(p.lo).toBeLessThanOrEqual(p.est);
+      expect(p.est).toBeLessThanOrEqual(p.hi);
+    }
+    expect(winA.k + winB.k + (json.draws as P).k).toBe(6);
+    const turns = json.turns as { mean: { n: number; lo: number; hi: number } };
+    expect(turns.mean.n).toBe(6);
+    expect(json.agents).toEqual({ a: 'greedy', b: 'greedy' });
+    expect(json.validation).toBeNull();
+    expect(json.notes).toEqual([HEURISTIC_SENTENCE]);
+    expect(json.elapsed).toMatch(/^elapsed \d+\.\d s \(one run\)$/);
+    const report = json.report as string;
+    expect(report).toContain('match: A = Rakdos Midrange (greedy) vs B = Mono-Red Aggro (greedy), seed 3, play alternate');
+    const n = checkLines(report, /^(match|games):/);
+    expect(n).toBeGreaterThanOrEqual(5);
+    const done = (await (await fetch(base + '/api/progress')).json()) as { running: boolean; kind: string; games: number; total: number };
+    expect(done).toMatchObject({ running: false, kind: 'match', games: 6, total: 6 });
+    console.log(`checked ${n} report lines over 6 games`);
+  }, 120_000);
+
+  it('bad input: 400 with a message', async () => {
+    const cases: [unknown, RegExp][] = [
+      [{ a: 'perfect', b: 'greedy', games: 10 }, /a must be one of random, greedy, mcts/],
+      [{ a: 'greedy', b: 7, games: 10 }, /b must be one of random, greedy, mcts/],
+      [{ a: 'greedy', b: 'greedy', games: 0 }, /games must be an integer from 1 to 2000/],
+      [[1], /the body must be/],
+    ];
+    for (const [body, msg] of cases) {
+      const { status, json } = await post('/api/match', body);
       expect(status, JSON.stringify(json)).toBe(400);
       expect(json.error).toMatch(msg);
     }

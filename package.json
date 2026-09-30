@@ -1,6 +1,6 @@
 {
   "name": "matchup-lab",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Simulation-and-search decision aid for one fixed Magic: The Gathering matchup (Pioneer: Rakdos Midrange vs Mono-Red Aggro). A small rules engine for the 56 cards in the two lists, heuristic and search agents, a mulligan tool, a spot analyzer and a local web UI. Not a GTO solver.",
   "license": "MIT",

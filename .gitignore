@@ -6,3 +6,4 @@ out/
 .dashclaw-local/
 docs/CR.txt
 out/
+.node/

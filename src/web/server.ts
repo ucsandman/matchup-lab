@@ -12,6 +12,8 @@
 //   POST /api/spot                a spot (docs/SPOT-FORMAT.md) plus "player" and "budget"; runs the
 //                                 same loader, search and report code as the spot command
 //   POST /api/hand                {hand, play, mulligans, bottom?, maxGames?}; runs the hand tool
+//   POST /api/match               {a, b, games, seed?, workers?}; runs the match command's runner
+//   GET  /api/progress            the running (or last) analysis: kind, games played so far, seconds
 //   GET  /img/<set>/<number>      a card image, proxied from Scryfall (see the image proxy below)
 // Card images come from Scryfall's image endpoint, built from each card's scryfall_uri in
 // decks/oracle.json (oracle.json has no image URIs); the page shows the card name when an image
@@ -27,7 +29,11 @@ import { DeterminizeError } from '../agents/determinize.js';
 import { defaultSearchWorkers, searchViewParallel } from '../agents/ismcts.js';
 import { DETERMINIZATION_SENTENCE, HEURISTIC_SENTENCE, fmtStep, formatSpotReport, type SpotArgs } from '../cli/spot.js';
 import { analyzeHand, DEFAULTS as HAND_DEFAULTS, formatHandReport, resolveHand } from '../tools/goldfish.js';
-import { defaultWorkers } from '../sim/runner.js';
+import { defaultWorkers, runMatch } from '../sim/runner.js';
+import { DEFAULT_KEY_CARDS, type MatchJob } from '../sim/games.js';
+import { formatReport, parseMatchArgs } from '../cli/index.js';
+import { UsageError } from '../cli/args.js';
+import { validationNote } from '../cli/validation.js';
 import type { PlayerId } from '../engine/types.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -243,7 +249,10 @@ function nameList(x: unknown, what: string): string[] {
   return x as string[];
 }
 
-export async function runHand(body: unknown): Promise<Record<string, unknown>> {
+/** Progress reporter: games played so far and the most the run can play (null when unknown). */
+export type OnProgress = (games: number, total: number | null) => void;
+
+export async function runHand(body: unknown, onProgress?: OnProgress): Promise<Record<string, unknown>> {
   if (typeof body !== 'object' || body === null || Array.isArray(body)) throw new BadRequest('the body must be {"hand": [...], "play": true|false, "mulligans": N}');
   const b = body as Record<string, unknown>;
   const hand = nameList(b.hand, 'hand');
@@ -259,8 +268,48 @@ export async function runHand(body: unknown): Promise<Record<string, unknown>> {
     goldfishGames: intIn(b.goldfishGames, 'goldfishGames', HAND_DEFAULTS.goldfishGames, 0, 20000),
   };
   try { resolveHand(opts); } catch (e) { throw new BadRequest((e as Error).message); }
-  const r = await analyzeHand(opts);
+  const total = 2 * opts.maxGames + opts.goldfishGames;
+  onProgress?.(0, total);
+  // The goldfish games ride on the first look, so after a look they are all played.
+  const r = await analyzeHand(opts, onProgress ? { onLook: (_look, keep, mull) => onProgress(keep.n + mull.n + opts.goldfishGames, total) } : {});
   return { report: formatHandReport(r), result: r, notes: [r.sentence] };
+}
+
+// ---- match --------------------------------------------------------------------------------------
+
+const AGENT_KINDS = ['random', 'greedy', 'mcts'];
+
+/** Agent vs agent: the match command's argument parser, runner and report (src/cli/index.ts). */
+export async function runMatchApi(body: unknown, onProgress?: OnProgress): Promise<Record<string, unknown>> {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) throw new BadRequest('the body must be {"a": "greedy"|"mcts", "b": "greedy"|"mcts", "games": N}');
+  const b = body as Record<string, unknown>;
+  for (const side of ['a', 'b'] as const) {
+    const v = b[side] ?? 'greedy';
+    if (typeof v !== 'string' || !AGENT_KINDS.includes(v)) throw new BadRequest(`${side} must be one of ${AGENT_KINDS.join(', ')}, got ${JSON.stringify(v)}`);
+  }
+  const games = intIn(b.games, 'games', 100, 1, 2000);
+  const seed = intIn(b.seed, 'seed', 1, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+  const workers = intIn(b.workers, 'workers', defaultWorkers(), 0, 256);
+  let a;
+  try {
+    a = parseMatchArgs(['--a', String(b.a ?? 'greedy'), '--b', String(b.b ?? 'greedy'), '--games', String(games), '--seed', String(seed), '--workers', String(workers)]);
+  } catch (e) {
+    if (e instanceof UsageError) throw new BadRequest(e.message);
+    throw e;
+  }
+  const job: MatchJob = {
+    deckA: 'deckA', deckB: 'deckB', agentA: { kind: a.a, mcts: a.mcts }, agentB: { kind: a.b, mcts: a.mcts }, play: a.play,
+    keyCards: [...DEFAULT_KEY_CARDS],
+  };
+  onProgress?.(0, games);
+  const r = await runMatch(job, { games, seed, workers, blockSize: a.blockSize, ...(onProgress ? { onProgress: (n: number) => onProgress(n, games) } : {}) });
+  const { perGame: _perGame, gamesPerSecPerCore: _wallRate, ...rest } = r;
+  return {
+    report: formatReport(r, a), agents: { a: a.a, b: a.b }, ...rest,
+    elapsed: `elapsed ${r.seconds.toFixed(1)} s (one run)`,
+    validation: a.a === 'mcts' || a.b === 'mcts' ? validationNote(a.mcts.mode, a.mcts) : null,
+    notes: [HEURISTIC_SENTENCE],
+  };
 }
 
 // ---- http ---------------------------------------------------------------------------------------
@@ -296,8 +345,13 @@ function send(res: ServerResponse, status: number, body: unknown): void {
   res.end(JSON.stringify(body));
 }
 
+interface Progress { running: boolean; kind: string | null; games: number; total: number | null; seconds: number }
+
 export function createWebServer(): Server {
   let busy = false;
+  let progress: Progress = { running: false, kind: null, games: 0, total: null, seconds: 0 };
+  let started = 0;
+  const report: OnProgress = (games, total) => { progress = { ...progress, games, total, seconds: (Date.now() - started) / 1000 }; };
   return createServer((req, res) => {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
     const path = url.pathname;
@@ -322,11 +376,23 @@ export function createWebServer(): Server {
         }
         if (req.method === 'GET' && path === '/api/decks') { send(res, 200, decksPayload()); return; }
         if (req.method === 'GET' && path === '/api/example') { send(res, 200, JSON.parse(readFileSync(join(ROOT, 'spots', 'example.json'), 'utf8'))); return; }
-        if (req.method === 'POST' && (path === '/api/spot' || path === '/api/hand')) {
+        if (req.method === 'GET' && path === '/api/progress') {
+          send(res, 200, progress.running ? { ...progress, seconds: (Date.now() - started) / 1000 } : progress);
+          return;
+        }
+        if (req.method === 'POST' && (path === '/api/spot' || path === '/api/hand' || path === '/api/match')) {
           const body = await readBody(req);
           if (busy) { send(res, 409, { error: 'another analysis is still running; wait for it to finish' }); return; }
           busy = true;
-          try { send(res, 200, path === '/api/spot' ? await runSpot(body) : await runHand(body)); } finally { busy = false; }
+          started = Date.now();
+          const kind = path.slice(5);
+          progress = { running: true, kind, games: 0, total: null, seconds: 0 };
+          try {
+            send(res, 200, kind === 'spot' ? await runSpot(body) : kind === 'hand' ? await runHand(body, report) : await runMatchApi(body, report));
+          } finally {
+            busy = false;
+            progress = { ...progress, running: false, seconds: (Date.now() - started) / 1000 };
+          }
           return;
         }
         send(res, 404, { error: `no route ${req.method ?? ''} ${path}` });

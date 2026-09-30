@@ -1,0 +1,4 @@
+# Launchers keep the line endings their OS needs, also in GitHub zip downloads.
+*.bat text eol=crlf
+*.command text eol=lf
+launch.py text eol=lf

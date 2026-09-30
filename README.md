@@ -15,9 +15,26 @@ What it is not:
   - Deck B, **Mono-Red Aggro**: _ZNT_, MTGO Pioneer Challenge 32, 2026-09-26, 8th place (https://www.mtggoldfish.com/deck/7973625). MTGGoldfish calls it Mono-Red Prowess; MTGTop8 files it as Red Deck Wins.
   - Both lists were pulled on 2026-09-29 and are in decks/deckA.json and decks/deckB.json. PLAN.md section 1 prints them in full.
 
+## Start here (no command line)
+
+You need Python and a web browser, nothing else. The first start sets up the rest by itself, inside this folder: it downloads Node.js if your computer does not have version 22 or newer (into a folder named .node here; nothing else on your computer is changed), installs the packages and builds the program.
+
+1. **Install Python** (skip this if you already have Python 3.8 or newer). Open https://www.python.org/downloads/ in your browser and click the yellow Download Python button. Run the file it downloads. On the first screen of the installer, tick the box **Add python.exe to PATH**, then click **Install Now**. When it says Setup was successful, click Close.
+2. **Get the project folder.** Open https://github.com/ucsandman/matchup-lab, click the green **Code** button, then **Download ZIP**. In your Downloads folder, right-click the zip file, choose **Extract All**, then click **Extract**. (If you use git, cloning the repository works just as well.)
+3. **Start it.** Open the extracted folder (the one that contains Launch.bat and README.md) and double-click **Launch.bat**. If Windows shows "Windows protected your PC", click **More info**, then **Run anyway**. A black window opens.
+4. **Wait for the first setup.** The first time, the black window works for a few minutes (downloads, then building) and prints each step as it goes. Later starts take a few seconds.
+5. **Use the page.** Your browser opens the Matchup Lab page by itself. If it does not, the black window shows the address in a box (normally http://127.0.0.1:3456/): type it into your browser's address bar. The page runs on your computer only. Section [3a](#3a-the-web-page-build-a-board-by-clicking) explains the page. Leave the black window open while you use it.
+6. **Stop it.** Close the black window (or click in it and press Ctrl+C).
+
+If something goes wrong, the black window prints a line starting with PROBLEM (what happened) and a line starting with WHAT TO DO (the one thing to try next), then waits until you press Enter. If Python is missing, Launch.bat opens the Python download page and lists the steps above.
+
+On a Mac: in step 3, double-click **launch.command** instead. If macOS says it cannot be opened, right-click it, choose **Open**, then click **Open**. If it opens as text instead of running, the file lost its run permission: open Terminal, type chmod +x followed by a space, drag launch.command into the Terminal window, press Enter, and double-click it again.
+
+From a terminal, python launch.py does the same as Launch.bat (python3 launch.py on a Mac). Options: --no-browser (do not open the browser), --port 4000 (start on another port; the next free one is used when it is busy), --check (set up only, then exit), --reinstall (delete node_modules and dist and set up again).
+
 Contents:
 
-1. [Setup (once, on Windows)](#1-setup-once-on-windows)
+1. [Setup with PowerShell (for developers)](#1-setup-with-powershell-for-developers)
 2. [How to read the numbers](#2-how-to-read-the-numbers)
 3. The tools: [web page](#3a-the-web-page-build-a-board-by-clicking), [hand tool](#3b-hand-tool-keep-or-mulligan), [spot tool](#3c-spot-tool-what-do-i-do-in-this-position), [match tool](#3d-match-tool-computer-player-against-computer-player)
 4. [Limits: what the numbers do not tell you](#4-limits-what-the-numbers-do-not-tell-you)
@@ -30,7 +47,9 @@ Every command and every sample output below was run on 2026-09-29 from a fresh c
 
 ---
 
-## 1. Setup (once, on Windows)
+## 1. Setup with PowerShell (for developers)
+
+You do not need this section if you used [Start here](#start-here-no-command-line): Launch.bat and launch.py do all of it. This is the command-line setup, once, on Windows; the hand, spot and match tools in 3b to 3d need it.
 
 1. Install Node.js. Open https://nodejs.org in your browser, click the big download button (the LTS version; you need 22 or newer), run the installer and click Next through it with the default choices.
 2. Open the project folder in File Explorer (the folder that contains this README.md).
@@ -93,7 +112,7 @@ Every tool ends with the line: Win rates reflect heuristic play, not perfect pla
 
 ## 3a. The web page: build a board by clicking
 
-Start it (copy, paste, Enter, in the PowerShell window of step 3 of setup):
+The easy way to start it is double-clicking Launch.bat ([Start here](#start-here-no-command-line)); it opens the page for you. From PowerShell instead (copy, paste, Enter, in the PowerShell window of step 3 of setup):
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\web.ps1
@@ -109,54 +128,27 @@ MTG matchup web UI: open http://127.0.0.1:3456/ in your browser (Ctrl+C stops th
 2. Leave the PowerShell window open while you use the page. To stop, click in that window and press Ctrl+C.
 3. The first time, the card pictures take about 10 seconds to appear (they come from Scryfall and are then kept on your computer). Until then each tile shows the card name, which works just as well.
 
-**What you see.** A title, one sentence saying what the page does, and two tabs: Board position, and Opening hand: keep or mulligan?
+**What you see.** The name Matchup Lab, one line saying what it does (Rakdos Midrange vs Mono-Red Aggro, win rates from simulated games) and three large question cards. Click one to start; the links at the top right switch between them at any time. Every answer gives each number with how many games it is based on (n) and a likely range (the 95 percent interval of section 2), and the sentence Win rates reflect heuristic play, not perfect play stays under every result. A small ? next to a word explains it when you point at it (or tab to it).
 
-**Board position tab: build a board.**
+**Should I keep this hand?** (the first card)
 
-1. On the left are both decklists as card tiles: Rakdos Midrange (player A) and Mono-Red Aggro (player B). Hover over a tile to read the card. The small number on a tile (for example 3/4) is how many copies are not placed yet.
-2. Above the tiles, pick where a click puts the card: Battlefield, Hand, Graveyard or Exile. A Rakdos tile goes to player A, a Mono-Red tile to player B. Tokens (Blood, Treasure, Goblin Shaman and the others) are buttons under each list and only go on the battlefield.
-3. Click the tiles. Clicking Mountain three times puts three Mountains on B's battlefield.
-4. On the right, under Game state, set:
-   - You are: whose eyes the board is seen through. Your whole hand is known; the opponent's hand is not.
-   - On the play: who took turn 1.
-   - Turn number: both players' turns are counted. On the play your turns are 1, 3, 5; on the draw 2, 4, 6. So your third turn on the draw is turn 6. Changing this sets Whose turn for you.
-   - Step (for example Main phase 1) and Who has priority (normally the player whose turn it is).
-   - Tick the box if that player already played a land this turn.
-5. In each player's panel: life and mulligans taken. For the opponent, Unknown cards in hand is how many cards they hold that you have not seen. Cards you click into the opponent's hand are ones you know they hold (from Thoughtseize or Duress). Leave Library size empty and it is counted for you.
-6. Each permanent has its own boxes: tapped, and for creatures summoning sick, damage and counters; lore for sagas, loyalty for Liliana, and the face of double-faced cards. Remove takes it off the battlefield; the x on a card in a hand or graveyard removes it.
-7. Under Analyze this position, pick a Search size (Quick is selected; Standard and Deep take longer and give narrower intervals) and press **Analyze position**.
+1. Pick your seven cards: click them in the Rakdos Midrange list, grouped by type. They appear as a hand with a counter (7 of 7). Click a card in the hand to put it back; Clear empties it.
+2. Play or draw: click On the play or On the draw.
+3. Mulligans already taken: 0, 1 or 2. After one mulligan, step 1 asks for the six cards you kept (6 of 6). Under More options you can instead enter all seven cards you drew and let the computer choose the bottom card, and pick up to 1000 games per choice instead of 400.
+4. Press **Should I keep it?** A progress line counts the games played. The answer is a big KEEP, MULLIGAN or TOO CLOSE TO CALL and one sentence, for example: Keeping wins 58 percent of 100 simulated games (likely between 48 and 67 percent). Taking a mulligan to 6 wins 18 percent of 100 (likely between 12 and 27 percent). **Details** opens a table of the goldfish numbers (how fast the hand wins against an opponent who does nothing, land drops, key cards on time), each with its range and n, and the full hand report of 3b.
 
-The other buttons: **Export JSON** saves the board as spot.json in your Downloads folder (the spot tool in 3c reads it). **Import JSON** loads such a file. **Load the example board** loads a Rakdos turn-4 decision with Sheoldred in hand. **Clear the board** starts over.
+**What is the best play on this board?** (the second card)
 
-**Reading the Results panel.** This is a board built by clicking (Rakdos on the draw, its third turn, turn 6, three lands in play, Fable, Fatal Push, Go for the Throat and a Pathway in hand; Mono-Red with three Mountains, Monastery Swiftspear and Emberheart Challenger and 3 unknown cards), Quick search, as the page showed it:
+1. Your side and 2. Their side: press **Add a card** on a side and click cards; the row at the top of the list says where a click puts the card (Battlefield, the default, Hand, Graveyard or Exile). Tokens are buttons under the list. Cards on the battlefield show as pictures: click one to tap or untap it (it turns sideways). Sagas get a chapter, Liliana her loyalty, double-faced cards a side, creatures a Summoning sick box and, under Counters, damage, +1/+1 and -1/-1 counters. Point at a card and press the x to remove it. Cards you put in their hand are ones you know they hold (from Thoughtseize or Duress).
+2. The game right now: whose turn it is, what part of the turn (before combat, combat, after combat, end of turn), the turn number (both players' turns count: on the play yours are 1, 3, 5; on the draw 2, 4, 6), both life totals, how many of their cards you have not seen, and whether a land was played this turn. **Advanced** holds the rest: which deck is yours, who went first, the exact step, who can act right now, day or night, library sizes (empty means counted for you), mulligans, cards you know on top or bottom of your library, a note, and whose win rates to show.
+3. How long should it think: Quick (about 1 second), Normal (about 2 seconds) or Deep (about 10 seconds, narrowest ranges), measured on the example board on the development machine. These are the page's three search sizes (4 x 100, 8 x 400 and 16 x 2000); Normal is the spot tool with --mode uct.
+4. Press **What should I do?** The answer names the best play the search found and its numbers, for example: Rakdos wins 75 percent of 212 simulated games after this play (likely between 69 and 81 percent). Below it, every play it compared is a row with a bar (the win rate) and a line across the bar (the likely range), then a collapsed **Full report** with the spot tool's text. A simulated game here is played forward two turns and then scored (a rollout). When the ranges of the top plays overlap, the page says so: the search has not told them apart; try Deep. "Best play found" means the play the search tried most; it is not a proven best play, and the page runs the plain search, not the validated computer player of the spot tool (3c). Under the result: The search samples hidden cards; it can act as if it knew cards you have not seen.
 
-```text
-Win rates are for player A. Deciding now: player A. Search: 4 samples x 100 searches, 400 rollouts in total; elapsed 0.4 s (one run).
-All moves together: win 56.8% [95% CI 51.9%-61.5%, n=400 rollouts]; mean value 0.535 [95% CI 0.527-0.543, t interval, SE 0.004, n=400]
-Top 5 of 8 possible moves (most searched first)
-A: cast Fatal Push -> Emberheart Challenger (B)
-win 47.4% [95% CI 35.0%-60.1%, n=57 rollouts]; mean value 0.562 [95% CI 0.542-0.582, t interval, SE 0.010, n=57]
-visits 57 of 400, in 4 of 4 samples
-A: cast Go for the Throat -> Emberheart Challenger (B)
-win 57.7% [95% CI 44.2%-70.1%, n=52 rollouts]; mean value 0.540 [95% CI 0.519-0.562, t interval, SE 0.011, n=52]
-visits 52 of 400, in 4 of 4 samples
-A: play Blightstep Pathway
-win 58.8% [95% CI 45.2%-71.2%, n=51 rollouts]; mean value 0.545 [95% CI 0.523-0.568, t interval, SE 0.011, n=51]
-visits 51 of 400, in 4 of 4 samples
-...
-Win rates reflect heuristic play, not perfect play.
-The search samples hidden cards; it can act as if it knew cards the player has not seen.
-```
+The buttons at the top: **Load an example board** (a Rakdos turn-4 decision with Sheoldred in hand), **Save board** (spot.json in your Downloads folder; the spot tool in 3c reads it), **Load a saved board** and **Clear the board**.
 
-- A **rollout** is one simulated game played forward from the board (cut off after 2 turns and scored). A **sample** is one random guess of the cards you cannot see.
-- **win 47.4% [95% CI 35.0%-60.1%, n=57 rollouts]**: of the 57 rollouts that started with this move, 47.4 percent were wins, with the interval as in section 2.
-- **visits 57 of 400** is how often the search tried the move. The most searched move is listed first; that is not the same as the best move.
-- **mean value** is the average score of those rollouts (0 = sure loss, 1 = sure win) with its own interval.
-- Here every interval overlaps every other: at this search size the page has not told these moves apart. Pick Standard or Deep for more rollouts, and read the spot tool's recommendation (3c).
-- The page runs the plain search (the same as the spot tool with --mode uct). It does not print the recommendation of the computer player that was tested against greedy; the spot tool does.
-- If the board cannot be analyzed (too many copies of a card, a card the list does not run), the panel shows the reason in red.
+**How does the matchup go?** (the third card) Pick the Rakdos player (Computer, or Search-assisted computer: the validated search agent of 3d, about 60 thread seconds per game) against the Mono-Red computer, then 100, 500 or 1000 games; each shows a rough time guess for this computer. Press **Run the games**. The result card says Rakdos wins X percent of N games (likely between ...), then Rakdos on the play and on the draw, the average game length in turns and the time taken, each with n and a range, and the match tool's full report. While a question runs, the others wait.
 
-**Opening hand tab.** Click seven Rakdos cards, choose On the play or On the draw, choose Mulligans already taken (after a mulligan tick bottom on the cards you put on the bottom, or none and the computer picks), choose Games per choice and press **Analyze hand**. You get KEEP, MULLIGAN or TOO CLOSE TO CALL with both win rates, exactly as the hand tool in 3b prints them. The page's default of 1,000 games per choice can take about a minute on a hand that is close; pick 200 when you want a fast rough answer. The same seven as the first example in 3b gave, on the page, in 18.4 s (one run): KEEP, keep 60.0% [95% CI 50.2-69.1%, n=100], mulligan to 6 34.0% [95% CI 25.5-43.7%, n=100].
+If something cannot be worked out (for example a card the list does not have), the answer box says so in words and repeats the analyzer's reason.
 
 More detail: docs/WEB-UI.md.
 

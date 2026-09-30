@@ -4,127 +4,231 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Rakdos vs Mono-Red Analyzer</title>
+<title>Matchup Lab</title>
+<meta name="description" content="Rakdos Midrange vs Mono-Red Aggro (Pioneer): ask a question, get win rates from thousands of simulated games.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="top">
-  <h1>Rakdos vs Mono-Red: position and opening-hand analyzer</h1>
-  <p class="lede">Click cards to rebuild a game position or an opening hand, then press Analyze to see which play wins most often when this computer plays the rest of the game many times with simple heuristic players.</p>
-  <nav class="tabs" role="tablist">
-    <button type="button" role="tab" id="tab-board" aria-selected="true" aria-controls="panel-board">Board position</button>
-    <button type="button" role="tab" id="tab-hand" aria-selected="false" aria-controls="panel-hand">Opening hand: keep or mulligan?</button>
-  </nav>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="site">
+  <div class="wrap">
+    <div class="brand-row">
+      <h1><a href="#/" id="home-link">Matchup Lab</a></h1>
+      <nav class="topnav" aria-label="Questions">
+        <a href="#/hand" data-route="hand">Keep this hand?</a>
+        <a href="#/board" data-route="board">Best play</a>
+        <a href="#/match" data-route="match">Matchup stats</a>
+      </nav>
+    </div>
+    <p class="lede">Rakdos Midrange vs Mono-Red Aggro (Pioneer). Ask a question, get win rates from thousands of simulated games.</p>
+    <p class="caveat">Win rates reflect heuristic play, not perfect play. <button type="button" class="tip" aria-label="What does heuristic play mean?" data-tip="Heuristic play: the computer players follow sensible rules of thumb (play a land, cast the best spell they can afford, attack when it looks good). They are decent, not perfect, so a win rate here says how a hand or a play does between two such players.">?</button></p>
+  </div>
 </header>
 
-<main>
-  <section id="panel-board" role="tabpanel" aria-labelledby="tab-board">
-    <div class="layout">
-      <div class="decks">
-        <fieldset class="dest">
-          <legend>Clicking a card adds a copy to</legend>
-          <label><input type="radio" name="zone" value="battlefield" checked> Battlefield</label>
-          <label><input type="radio" name="zone" value="hand"> Hand</label>
-          <label><input type="radio" name="zone" value="graveyard"> Graveyard</label>
-          <label><input type="radio" name="zone" value="exile"> Exile</label>
-          <p class="hint">Rakdos cards go to player A, Mono-Red cards to player B. A card in the opponent's hand is a card you know they hold (seen with Thoughtseize or Duress). Hover a card to read it.</p>
-        </fieldset>
-        <div class="deck-cols">
-          <div class="deck-col" id="deck-0"></div>
-          <div class="deck-col" id="deck-1"></div>
+<main id="main" class="wrap">
+  <div id="load-error" class="error" role="alert" hidden></div>
+
+  <!-- Home: the three questions -->
+  <section id="view-home" class="view" aria-labelledby="home-title">
+    <h2 id="home-title" class="home-title">What do you want to know?</h2>
+    <div class="questions">
+      <a class="question main" href="#/hand" id="q-hand">
+        <span class="q-kicker">Start here</span>
+        <span class="q-title">Should I keep this hand?</span>
+        <span class="q-desc">Pick your opening seven and see whether keeping it beats taking a mulligan.</span>
+        <span class="q-go">Check a hand</span>
+      </a>
+      <a class="question" href="#/board" id="q-board">
+        <span class="q-kicker">During a game</span>
+        <span class="q-title">What is the best play on this board?</span>
+        <span class="q-desc">Put the cards on the table for both sides and compare your possible plays.</span>
+        <span class="q-go">Set up a board</span>
+      </a>
+      <a class="question" href="#/match" id="q-match">
+        <span class="q-kicker">The big picture</span>
+        <span class="q-title">How does the matchup go?</span>
+        <span class="q-desc">Let the computer play Rakdos against Mono-Red many times and see who wins how often.</span>
+        <span class="q-go">Run games</span>
+      </a>
+    </div>
+    <p class="home-note">Everything runs on this computer. Card pictures are downloaded once from Scryfall and then kept here.</p>
+  </section>
+
+  <!-- Hand flow -->
+  <section id="view-hand" class="view" aria-labelledby="hand-title" hidden>
+    <div class="flow-head">
+      <h2 id="hand-title">Should I keep this hand?</h2>
+      <p>Three quick steps, then one button. You play Rakdos Midrange against Mono-Red Aggro.</p>
+    </div>
+    <ol class="steps">
+      <li class="step">
+        <h3><span class="num" aria-hidden="true">1</span> <span id="hand-step1-title">Pick your seven cards</span></h3>
+        <p class="step-hint" id="hand-step1-hint">Click the cards in your opening hand. Click a card in your hand to put it back.</p>
+        <div class="hand-bar">
+          <div id="hand-cards" class="hand-cards" aria-label="Your hand"></div>
+          <div class="hand-meta">
+            <span id="hand-counter" class="counter" aria-live="polite">0 of 7</span>
+            <button type="button" id="hand-clear" class="ghost">Clear</button>
+          </div>
         </div>
+        <div id="hand-picker" class="picker"></div>
+      </li>
+      <li class="step">
+        <h3><span class="num" aria-hidden="true">2</span> Play or draw</h3>
+        <div class="toggle-row" role="radiogroup" aria-label="Play or draw">
+          <button type="button" role="radio" class="big-toggle" data-play="play" aria-checked="true">On the play<small>You go first</small></button>
+          <button type="button" role="radio" class="big-toggle" data-play="draw" aria-checked="false">On the draw<small>They go first, you draw on your first turn</small></button>
+        </div>
+      </li>
+      <li class="step">
+        <h3><span class="num" aria-hidden="true">3</span> Mulligans already taken
+          <button type="button" class="tip" aria-label="What is a mulligan here?" data-tip="London mulligan: you shuffle away a hand you do not like, draw seven new cards and put one card on the bottom for each mulligan taken. After one mulligan you keep six cards.">?</button></h3>
+        <div class="toggle-row compact" role="radiogroup" aria-label="Mulligans already taken">
+          <button type="button" role="radio" class="big-toggle" data-mull="0" aria-checked="true">0<small>My first seven</small></button>
+          <button type="button" role="radio" class="big-toggle" data-mull="1" aria-checked="false">1<small>Keeping six</small></button>
+          <button type="button" role="radio" class="big-toggle" data-mull="2" aria-checked="false">2<small>Keeping five</small></button>
+        </div>
+        <details class="more" id="hand-more">
+          <summary>More options</summary>
+          <fieldset class="plain">
+            <legend>Games per choice</legend>
+            <label><input type="radio" name="hand-games" value="400" checked> Up to 400 (usually under a minute)</label>
+            <label><input type="radio" name="hand-games" value="1000"> Up to 1000 (slower, narrower ranges)</label>
+          </fieldset>
+          <label class="check"><input type="checkbox" id="hand-all7"> After a mulligan: I will enter all seven cards I drew, and the computer picks which to put on the bottom.</label>
+        </details>
+      </li>
+    </ol>
+    <div class="action-row">
+      <button type="button" id="hand-go" class="primary big">Should I keep it?</button>
+      <p id="hand-msg" class="inline-msg" role="status"></p>
+    </div>
+    <section id="hand-result" class="result" aria-live="polite" aria-label="Hand result">
+      <p class="empty-state">Your answer appears here. Pick your cards above, then press Should I keep it?</p>
+    </section>
+    <p class="footnote">Win rates reflect heuristic play, not perfect play. The hand is played many times against the computer Mono-Red player and compared with taking a mulligan.</p>
+  </section>
+
+  <!-- Board flow -->
+  <section id="view-board" class="view" aria-labelledby="board-title" hidden>
+    <div class="flow-head">
+      <h2 id="board-title">What is the best play on this board?</h2>
+      <p>Put the cards on the table, say where the game is, and press one button.</p>
+      <div class="toolbar" role="group" aria-label="Board file">
+        <button type="button" id="load-example" class="ghost">Load an example board</button>
+        <button type="button" id="export" class="ghost">Save board</button>
+        <label class="button ghost" for="import-file">Load a saved board</label>
+        <input type="file" id="import-file" accept=".json,application/json" class="visually-hidden">
+        <button type="button" id="clear" class="ghost">Clear the board</button>
       </div>
-
-      <div class="board">
-        <fieldset class="game">
-          <legend>Game state</legend>
-          <div class="grid">
-            <label>You are
-              <select id="viewer" title="The spot is analyzed from this player's point of view: their whole hand is known, the opponent's hand is not.">
-                <option value="0">A: Rakdos Midrange</option><option value="1">B: Mono-Red Aggro</option>
-              </select></label>
-            <label>On the play (took turn 1)
-              <select id="starting"><option value="0">A: Rakdos Midrange</option><option value="1">B: Mono-Red Aggro</option></select></label>
-            <label>Turn number <abbr title="Counts both players' turns: on the play your turns are 1, 3, 5, ...; on the draw 2, 4, 6, .... Turn 0 is the mulligan step before the game.">(?)</abbr>
-              <input id="turn" type="number" min="0" max="200" step="1"></label>
-            <label>Step
-              <select id="step" title="The phase or step of the turn the position is in."></select></label>
-            <label>Whose turn
-              <select id="active" title="The active player: whose turn it is. Changing the turn number or who is on the play sets this for you.">
-                <option value="0">A: Rakdos Midrange</option><option value="1">B: Mono-Red Aggro</option>
-              </select></label>
-            <label>Who has priority <abbr title="Priority: the player who may cast a spell or activate an ability right now. Usually the player whose turn it is.">(?)</abbr>
-              <select id="priority"><option value="0">A: Rakdos Midrange</option><option value="1">B: Mono-Red Aggro</option></select></label>
-            <label class="check"><input id="land-played" type="checkbox"> The player whose turn it is has played a land this turn</label>
+      <p id="board-msg" class="inline-msg" role="status"></p>
+    </div>
+    <ol class="steps">
+      <li class="step step-sides">
+        <div id="sides" class="sides"></div>
+      </li>
+      <li class="step">
+        <h3><span class="num" aria-hidden="true">3</span> The game right now</h3>
+        <div class="fields" id="game-fields">
+          <div class="field">
+            <span class="field-label" id="lbl-active">Whose turn is it?</span>
+            <div class="seg" role="radiogroup" aria-labelledby="lbl-active" id="active-seg"></div>
           </div>
-          <p class="warn" id="turn-warning" hidden></p>
-          <label class="note-label">Note (optional, saved with the board)
-            <input id="note" type="text" maxlength="400" placeholder="for example: my turn 4, Sheoldred now or hold up removal?"></label>
-        </fieldset>
-
-        <div id="players"></div>
-
-        <fieldset class="analyze">
-          <legend>Analyze this position</legend>
-          <div class="grid">
-            <label>Search size
-              <select id="budget" title="More samples and searches give narrower intervals and take longer. Samples: random guesses of the cards you cannot see."></select></label>
-            <label>Show win rates for
-              <select id="perspective"><option value="">You (the player above)</option><option value="A">A: Rakdos Midrange</option><option value="B">B: Mono-Red Aggro</option></select></label>
+          <div class="field">
+            <label class="field-label" for="phase">What part of the turn?</label>
+            <select id="phase"></select>
           </div>
-          <div class="buttons">
-            <button type="button" id="analyze" class="primary">Analyze position</button>
-            <button type="button" id="export">Export JSON</button>
-            <label class="button" for="import-file">Import JSON</label>
-            <input type="file" id="import-file" accept=".json,application/json" class="visually-hidden">
-            <button type="button" id="load-example">Load the example board</button>
-            <button type="button" id="clear">Clear the board</button>
+          <div class="field">
+            <label class="field-label" for="turn">Turn number
+              <button type="button" class="tip" aria-label="How are turns counted?" data-tip="Count both players' turns. On the play your turns are 1, 3, 5 and so on; on the draw they are 2, 4, 6. Your third turn on the draw is turn 6.">?</button></label>
+            <input id="turn" type="number" min="1" max="200" step="1">
           </div>
-        </fieldset>
-
-        <section class="results" id="spot-results" aria-live="polite">
-          <h2>Results</h2>
-          <p class="hint">Set up a position and press Analyze position. The results appear here.</p>
-        </section>
-      </div>
+          <div class="field">
+            <label class="field-label" for="life-you">Your life</label>
+            <input id="life-you" type="number" min="-99" max="999" step="1">
+          </div>
+          <div class="field">
+            <label class="field-label" for="life-them">Their life</label>
+            <input id="life-them" type="number" min="-99" max="999" step="1">
+          </div>
+          <div class="field">
+            <label class="field-label" for="hidden">Cards in their hand you have not seen
+              <button type="button" class="tip" aria-label="What happens to cards I have not seen?" data-tip="The search fills these in at random from the rest of their decklist, many times over (determinization). Cards you do know about, from Thoughtseize for example, go in their hand with Add a card.">?</button></label>
+            <input id="hidden" type="number" min="0" max="60" step="1">
+          </div>
+          <label class="check wide"><input id="land-played" type="checkbox"> <span id="land-played-text">A land was already played this turn</span></label>
+        </div>
+        <p class="warn" id="turn-warning" hidden></p>
+        <details class="more" id="advanced">
+          <summary>Advanced</summary>
+          <div id="advanced-fields"></div>
+        </details>
+      </li>
+      <li class="step">
+        <h3><span class="num" aria-hidden="true">4</span> How long should it think?</h3>
+        <div class="toggle-row" role="radiogroup" aria-label="Search size" id="budget-row"></div>
+      </li>
+    </ol>
+    <div class="action-row">
+      <button type="button" id="analyze" class="primary big">What should I do?</button>
+      <p id="analyze-msg" class="inline-msg" role="status"></p>
+    </div>
+    <section id="board-result" class="result" aria-live="polite" aria-label="Board result">
+      <p class="empty-state">Your answer appears here. Add cards to both sides (or load the example board), then press What should I do?</p>
+    </section>
+    <div class="footnote">
+      <p>Win rates reflect heuristic play, not perfect play.</p>
+      <p>The search samples hidden cards; it can act as if it knew cards you have not seen. <button type="button" class="tip" aria-label="What does that mean?" data-tip="Determinization: to handle the cards you cannot see, the search guesses them at random, then searches each guess as if every card were face up. So it can favour a play that is only good when you already know their hand.">?</button></p>
     </div>
   </section>
 
-  <section id="panel-hand" role="tabpanel" aria-labelledby="tab-hand" hidden>
-    <div class="layout">
-      <div class="decks">
-        <p class="hint">Click Rakdos Midrange cards to build your opening seven (the hand tool analyzes deck A only). Click a card in the hand to remove it.</p>
-        <div class="deck-col" id="hand-deck"></div>
-      </div>
-      <div class="board">
-        <fieldset class="game">
-          <legend>Your opening hand</legend>
-          <div class="grid">
-            <label>Play or draw
-              <select id="hand-play"><option value="play">On the play (you go first)</option><option value="draw">On the draw (you go second)</option></select></label>
-            <label>Mulligans already taken <abbr title="London mulligan: after N mulligans you draw 7 and put N on the bottom. Give the 7 cards drawn; tick the ones you bottom, or leave them unticked and the computer picks.">(?)</abbr>
-              <select id="hand-mulligans"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
-            <label>Games per choice (at most)
-              <select id="hand-games" title="The tool stops early when keep and mulligan clearly differ. More games give narrower intervals.">
-                <option value="1000">1000 (default, up to about a minute)</option><option value="200">200 (faster, wider intervals)</option>
-              </select></label>
-          </div>
-          <div id="hand-list" class="hand-list"></div>
-          <div class="buttons">
-            <button type="button" id="hand-analyze" class="primary">Analyze hand</button>
-            <button type="button" id="hand-clear">Clear the hand</button>
-          </div>
-        </fieldset>
-        <section class="results" id="hand-results" aria-live="polite">
-          <h2>Results</h2>
-          <p class="hint">Click seven cards and press Analyze hand. The tool plays the hand many times against the Mono-Red deck and compares it with taking a mulligan.</p>
-        </section>
-      </div>
+  <!-- Match flow -->
+  <section id="view-match" class="view" aria-labelledby="match-title" hidden>
+    <div class="flow-head">
+      <h2 id="match-title">How does the matchup go?</h2>
+      <p>The computer plays both decks against each other many times, taking turns being on the play, and counts the wins.</p>
     </div>
+    <ol class="steps">
+      <li class="step">
+        <h3><span class="num" aria-hidden="true">1</span> Pick the two players</h3>
+        <div class="players-pick">
+          <div>
+            <p class="pick-label" id="lbl-rakdos">Rakdos Midrange</p>
+            <div class="toggle-row" role="radiogroup" aria-labelledby="lbl-rakdos" id="agent-row">
+              <button type="button" role="radio" class="big-toggle" data-agent="greedy" aria-checked="true">Computer<small>Plays by rules of thumb. Fast.</small></button>
+              <button type="button" role="radio" class="big-toggle" data-agent="mcts" aria-checked="false">Search-assisted computer<small>Looks ahead before each play. Much slower.</small></button>
+            </div>
+          </div>
+          <div>
+            <p class="pick-label" id="lbl-red">Mono-Red Aggro</p>
+            <div class="toggle-row" role="radiogroup" aria-labelledby="lbl-red">
+              <button type="button" role="radio" class="big-toggle" aria-checked="true">Computer<small>Plays by rules of thumb. Fast.</small></button>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li class="step">
+        <h3><span class="num" aria-hidden="true">2</span> How many games?
+          <button type="button" class="tip" aria-label="Why more games?" data-tip="n is the number of games a result is based on. More games give a narrower likely range (the 95 percent confidence interval), at the cost of time.">?</button></h3>
+        <div class="toggle-row compact" role="radiogroup" aria-label="Number of games" id="games-row">
+          <button type="button" role="radio" class="big-toggle" data-games="100" aria-checked="true">100<small class="est"></small></button>
+          <button type="button" role="radio" class="big-toggle" data-games="500" aria-checked="false">500<small class="est"></small></button>
+          <button type="button" role="radio" class="big-toggle" data-games="1000" aria-checked="false">1000<small class="est"></small></button>
+        </div>
+      </li>
+    </ol>
+    <div class="action-row">
+      <button type="button" id="match-go" class="primary big">Run the games</button>
+      <p id="match-msg" class="inline-msg" role="status"></p>
+    </div>
+    <section id="match-result" class="result" aria-live="polite" aria-label="Match result">
+      <p class="empty-state">Your result appears here. Pick the players and the number of games, then press Run the games.</p>
+    </section>
+    <p class="footnote">Win rates reflect heuristic play, not perfect play. They describe these computer players, not how strong human players would do.</p>
   </section>
 </main>
-<footer class="foot">
-  <p>Runs on this computer only (127.0.0.1). Card images come from Scryfall. Win rates reflect heuristic play, not perfect play.</p>
+<footer class="site-foot wrap">
+  <p>Matchup Lab runs on this computer only. Card images from Scryfall. Every number comes with how many games it is based on (n) and a likely range (95 percent confidence interval).</p>
 </footer>
 <script src="app.js"></script>
 </body>

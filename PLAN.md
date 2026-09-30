@@ -459,7 +459,7 @@ Status at release 0.1.0 (2026-09-30; evidence lines are in CHANGELOG.md under 0.
 - Phase 2: done. Gate evidence: CHANGELOG Added, Phase 2 gate results and Phase 2 gate check.
 - Phase 3: done. Gate evidence: CHANGELOG Added, Phase 3 gate check; the 60-second answer on 8 workers is met with the 400-game cap of D27 (d) and depends on machine load (CHANGELOG Known gaps, Phase 3 worst-case time).
 - Phase 4: done, PASS on both sides. Gate evidence: docs/ACCEPTANCE.md; CHANGELOG Added, Phase 4 acceptance and Phase 4 gate check.
-- Phase 5: done, CLI and web UI. Gate evidence: CHANGELOG Added, Phase 5 CLI tests, Phase 5 web UI tests (npm run smoke:web, 27 checks, passing twice in a row) and the Final gate line; docs/WEB-UI.md; D27.
+- Phase 5: done, CLI and web UI; 0.2.0 (2026-09-30) adds the one-click launcher (launch.py, Launch.bat, launch.command) and the guided web UI with the match endpoint. Gate evidence: CHANGELOG Added (0.1.0 and 0.2.0), Phase 5 CLI tests, Phase 5 web UI tests (npm run smoke:web, 49 checks since 0.2.0) and the Final gate line; docs/WEB-UI.md; D27.
 - Phase 6: done, no training code. Gate evidence: docs/JSONL-SCHEMA.md; CHANGELOG Added, Phase 6 gate (10,000 games, --validate 0 errors). The log is under out/, which is gitignored, so it is regenerated with node dist/tools/selfplay-log.js rather than kept in the repo.
 - Final README: done. Gate evidence: README.md; CHANGELOG Added, Final gate (clean copy, verify:all 4 of 4 steps, 547 of 547 tests), and Fixed, Final README.
 

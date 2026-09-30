@@ -21,6 +21,11 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Launcher check (python launch.py --check; must reuse the Node on PATH)
+        shell: bash
+        run: |
+          ${{ runner.os == 'Windows' && 'python' || 'python3' }} launch.py --check | tee launch-check.txt
+          grep -q "already installed on this computer; using it" launch-check.txt
       - run: npm run build
       - name: Comprehensive rules text (not committed; see docs/RULES-NOTES.md)
         run: node scripts/fetch-cr.mjs
