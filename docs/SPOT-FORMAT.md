@@ -135,4 +135,4 @@ Limits:
 
 - The deal is uniform. It infers nothing from how the opponent has played (cards held, blocks not made, a mulligan), and it does not know which cards the opponent put on the bottom after their mulligan.
 - A spot in the middle of a spell's resolution (a Duress pick, a scry, a trigger's target, a would-die replacement) cannot be continued, because the file does not hold the half-finished operation; the determinizer refuses it with a message. Positions where a player has priority, declares attackers or blockers, or makes a mulligan decision all work.
-- A search over sampled hidden cards can play as if it knew them (strategy fusion); README.md, section 'Spot analyzer: what it gets wrong (the determinization weakness)', covers this and the uniform deal above (non-locality).
+- A search over sampled hidden cards can play as if it knew them (strategy fusion); docs/DEVELOPERS.md, section 'Spot analyzer: what it gets wrong (the determinization weakness)', covers this and the uniform deal above (non-locality).

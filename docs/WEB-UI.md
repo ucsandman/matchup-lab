@@ -2,7 +2,7 @@
 
 Matchup Lab is a page on your own computer that answers three questions about Rakdos Midrange vs Mono-Red Aggro (Pioneer) by simulating games: should I keep this hand, what is the best play on this board, and how does the matchup go. You click cards and buttons; you never write JSON or open a terminal. It runs on 127.0.0.1 only, so nobody else on your network can open it.
 
-Win rates reflect heuristic play, not perfect play. The board search also samples the cards you cannot see, so it can act as if it knew them (README.md, section 'Spot analyzer: what it gets wrong').
+Win rates reflect heuristic play, not perfect play. The board search also samples the cards you cannot see, so it can act as if it knew them (docs/DEVELOPERS.md, section 'Spot analyzer: what it gets wrong').
 
 ## Start it
 
@@ -46,7 +46,7 @@ The buttons at the top: Load an example board (spots/example.json, your fourth t
 
 The result names the best play found (for you, or for your opponent when they are the one deciding) with a sentence such as Rakdos wins 75 percent of 212 simulated games after this play (likely between 69 and 81 percent). A simulated game here is a rollout: the game played forward two turns by the heuristic players and then scored. When the next play's range overlaps, a line says the search has not told them apart and suggests Deep. Then every play the search compared (up to five, most searched first) is a row with its name, a bar for the win rate with a line across it for the likely range, and its numbers (wins 75% of 212 games, likely 69 to 81%). A line gives all plays together with n, the number of guesses of the hidden cards and the elapsed time. Full report (collapsed) is the spot command's text, including the mean value and the most searched line after each play.
 
-Best play found means the play the search tried most often. It is the best of the plays it compared for these heuristic players, not a proven best play. The page runs the plain search; the recommendation of the validated computer player comes from the spot command (README.md, 3c). Under the result: Win rates reflect heuristic play, not perfect play. The search samples hidden cards; it can act as if it knew cards you have not seen.
+Best play found means the play the search tried most often. It is the best of the plays it compared for these heuristic players, not a proven best play. The page runs the plain search; the recommendation of the validated computer player comes from the spot command (docs/DEVELOPERS.md, 3c). Under the result: Win rates reflect heuristic play, not perfect play. The search samples hidden cards; it can act as if it knew cards you have not seen.
 
 Small n means a wide range. When two plays' ranges overlap, the search has not told them apart.
 

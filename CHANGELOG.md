@@ -4,6 +4,9 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+### Changed
+- README rewritten as a short player guide (get it running, using the page, reading the numbers, troubleshooting, limits) with two screenshots in docs/img; the full technical reference moved to docs/DEVELOPERS.md.
+
 ## [0.2.0] - 2026-09-30
 
 ### Fixed

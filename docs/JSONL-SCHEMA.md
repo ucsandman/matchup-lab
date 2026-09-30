@@ -74,7 +74,7 @@ Object ids are the engine's ids. A card that changes zones gets a new id (CR 400
 | root[i].mean, meanLo, meanHi | number or null | mean rollout value for the decider in [0, 1] with its 95 percent Student t interval; null below 2 rollouts |
 | root[i].win | {k, n, est, lo, hi} | win-rate estimate over the rollouts: k wins of n = visits, est = k / n, [lo, hi] the Wilson 95 percent interval |
 
-The search statistics describe rollouts under a heuristic rollout policy and a changing tree policy, on determinized samples in which the hidden cards are dealt at random (the determinization weakness, README.md). They are search targets, not the win probability of any fixed play, and nothing in this log is perfect play. Numbers that are NaN in the engine (an interval below 2 rollouts) are written as null.
+The search statistics describe rollouts under a heuristic rollout policy and a changing tree policy, on determinized samples in which the hidden cards are dealt at random (the determinization weakness, docs/DEVELOPERS.md). They are search targets, not the win probability of any fixed play, and nothing in this log is perfect play. Numbers that are NaN in the engine (an interval below 2 rollouts) are written as null.
 
 An example search field (mcts, 8 samples x 24 iterations; the legal moves were play Mutavault, play Blood Crypt paying 2 life, play Blood Crypt tapped, pass). With 8 rollouts per move every interval is wide: the three moves are not separated.
 

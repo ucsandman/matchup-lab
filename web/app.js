@@ -845,7 +845,7 @@
 
   // ---- match flow ------------------------------------------------------------------------------
 
-  // Thread seconds per game on the development machine (README section 6, docs/ACCEPTANCE.md): about
+  // Thread seconds per game on the development machine (docs/DEVELOPERS.md section 6, docs/ACCEPTANCE.md): about
   // 0.9 for two computer players, about 64 with the search-assisted player. A rough guess, shown as such.
   function estimate(agent, games) {
     var cores = Math.max(1, ((typeof navigator !== 'undefined' && navigator.hardwareConcurrency) || 4) - 1);
