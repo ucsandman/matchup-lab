@@ -6,6 +6,9 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [0.2.0] - 2026-09-30
 
+### Fixed
+- Web UI polish after the clean-clone review: one footer line on the home page instead of two, the double-faced card selector is labelled Side with Front and Back options, board rejections read as plain sentences, and the launcher hides npm's advisory warnings during install.
+
 ### Added
 - One-click launcher: launch.py (Python 3.8+, standard library only) checks for Node, downloads a private copy into .node/ when none is installed, runs npm install and the build, starts the web server and opens the browser. Every failure prints a PROBLEM line and a WHAT TO DO line. Flags --no-browser, --port N, --check and --reinstall. Launch.bat (Windows, double-click) and launch.command (macOS) find Python and run it, or open python.org with install steps when it is missing. .gitattributes keeps the line endings of each launcher correct, including in GitHub ZIP downloads.
 - Guided web UI: a home page with three question cards (Should I keep this hand?, What is the best play on this board?, How does the matchup go?), each opening its own step-by-step flow with plain-word results that keep the sample size, the 95 percent interval and the heuristic-play note beside every number.

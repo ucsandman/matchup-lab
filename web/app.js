@@ -368,13 +368,20 @@
     }, function () { var e = new Error('offline'); e.offline = true; throw e; });
   }
 
+  function plainProblem(msg) {
+    return String(msg)
+      .replace(/^spot file rejected \(\d+ problems?\):\s*/, '')
+      .replace(/\bspot\.step\b/g, 'part of the turn').replace(/\bspot\.pregame\b/g, 'the pregame settings')
+      .replace(/\bspot\.(\w+)\b/g, '$1').replace(/(^|\n)\s*-\s+/g, '$1').replace(/\n+/g, '. ').replace(/\s+/g, ' ').trim();
+  }
+
   function showError(panel, e) {
     panel.textContent = '';
     var head;
     var detail;
     if (e.offline) { head = 'The page cannot reach Matchup Lab.'; detail = 'The program that does the work has stopped. Start Matchup Lab again, then reload this page.'; }
     else if (e.status === 409) { head = 'Another question is still being worked out.'; detail = 'Wait until it finishes, then press the button again.'; }
-    else if (e.status === 400) { head = 'This could not be worked out.'; detail = 'The analyzer says: ' + e.message; }
+    else if (e.status === 400) { head = 'This board could not be analyzed.'; detail = 'Check: ' + plainProblem(e.message); }
     else { head = 'Something went wrong.'; detail = e.message; }
     panel.appendChild(h('div', { class: 'error', role: 'alert' }, h('strong', { text: head }), h('p', { class: 'error-detail', text: detail })));
   }
@@ -556,11 +563,13 @@
     }
     if (c && c.planeswalker) opts.push(numField('Loyalty', e.loyalty === null ? 0 : e.loyalty, 0, 99, function (n) { e.loyalty = n; }));
     if (c && c.dfc) {
-      opts.push(h('select', { 'aria-label': 'Which side is up', title: 'Which side is up: a transformed card, or the side a Pathway was played as', onchange: function () {
-        e.face = parseInt(this.value, 10);
-        if (e.face !== 0) e.lore = null; else if (c.saga && e.lore === null) e.lore = 1;
-        renderSides();
-      } }, c.faces.map(function (f, i) { return h('option', { value: i, selected: i === e.face }, f.name); })));
+      opts.push(h('label', { title: 'Which side is up: a transformed card, or the side a Pathway was played as. Front: ' + c.faces[0].name + '. Back: ' + (c.faces[1] ? c.faces[1].name : '') },
+        'Side',
+        h('select', { 'aria-label': 'Which side is up', onchange: function () {
+          e.face = parseInt(this.value, 10);
+          if (e.face !== 0) e.lore = null; else if (c.saga && e.lore === null) e.lore = 1;
+          renderSides();
+        } }, c.faces.map(function (f, i) { return h('option', { value: i, selected: i === e.face, title: f.name }, (i === 0 ? 'Front' : 'Back') + ': ' + f.name); }))));
     }
     if (creature) {
       opts.push(h('label', { title: 'Summoning sick: it came in this turn (for the opponent: since their last turn began), so it cannot attack or tap yet' },

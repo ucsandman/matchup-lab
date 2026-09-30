@@ -345,7 +345,7 @@ def install_packages(npm, env):
     cmd = (
         npm
         + (["ci"] if lock_time is not None else ["install"])
-        + ["--include=dev", "--no-audit", "--no-fund"]
+        + ["--include=dev", "--no-audit", "--no-fund", "--loglevel=error"]
     )
     run(
         cmd,
